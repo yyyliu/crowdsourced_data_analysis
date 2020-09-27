@@ -5,6 +5,7 @@
       "Female == 1",
       "UniqueFemaleContributors >= 1 & DebateSize > 1",
       "Type == 2",
+      "Type == 2 & DebateSize > 1", 
       "Female_Contributions==UniqueFemaleContributors"
     ]},
     {"var": "DV", "options": [
@@ -12,16 +13,19 @@
       "FemaleParticipation",
       "WC",
       "CommentsChange",
-      "NextFemale"
+      "NextFemale",
+      "Female"
     ]},
     {"var": "IV", "options": [
       "UniqueFemaleContributors",
       "FemaleCumulativeProportion",
-      "FemalesInDiscussion"
+      "FemaleCurrentCount",
+      "FemalePreviousCount"
     ]},
     {"var": "covariates", "options": [
       "+ PreviousContributions + HavePhD + Total_Citations",
       "+ UniqueContributors",
+      "+ Discipline",
       ""
     ]}
   ],
@@ -34,16 +38,20 @@
       "condition": "filter.index == 0"},
     {"variable": "DV", "option": "WC", 
       "condition": "filter.index == 0"},
-    {"variable": "DV", "option": "NextFemale", 
-      "condition": "Unit == comment and IV == FemalesInDiscussion and Model == logistic"},
+    {"variable": "DV", "option": "NextFemale",
+      "condition": "Unit == comment and Model == logistic and filter.index != 0 and (IV == FemaleCurrentCount or IV == FemalePreviousCount)"},
+    {"variable": "DV", "option": "Female",
+      "condition": "Unit == comment and Model == logistic and filter.index != 0 and IV == FemalePreviousCount"},
     {"variable": "IV", "option": "FemaleCumulativeProportion",
       "condition": "Unit == comment"},
-    {"variable": "IV", "option": "FemalesInDiscussion",
+    {"variable": "IV", "option": "FemaleCurrentCount",
+      "condition": "Unit == comment and DV != ContributionsbyAuthor and DV != Female_Contributions"},
+    {"variable": "IV", "option": "FemalePreviousCount",
       "condition": "Unit == comment and DV != ContributionsbyAuthor and DV != Female_Contributions"},
     {"variable": "covariates", "index": 0,
       "condition": "Unit != thread"},
     {"block": "Model", "option": "logistic",
-      "condition": "DV == NextFemale"}
+      "condition": "DV == NextFemale or DV == Female"}
   ],
   "before_execute": "rm -rf results && mkdir results"
 }
@@ -58,13 +66,17 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 
 # augment the dataset with additional variables
 # FemaleCumulativeProportion: cumulative proportion of females in each conversation
-# FemalesInDiscussion: cumulative sum of previous female contributors in a conversation
+# FemaleCurrentCount: cumulative sum of female comments in a thread, including the current comment
+# FemalePreviousCount: cumulative sum of female comments in a thread, excluding the current comment
 # NextFemale: odds of next contributor to conversation being a woman
 df <- df %>% 
   group_by(ThreadId) %>% 
   mutate(FemaleCumulativeProportion = cummean(Female) * 100) %>% 
   arrange(Order) %>%
-  mutate(FemalesInDiscussion=cumsum(Female), NextFemale =lead(Female)) %>%
+  mutate(
+    FemaleCurrentCount = cumsum(Female),
+    FemalePreviousCount = cumsum(Female) - Female,
+    NextFemale =lead(Female)) %>%
   ungroup
 
 # CommentsChange: difference between female comments in current conversation and previous conversation
