@@ -133,7 +133,9 @@ disagg_fit <- pointwise_predict(model, df) %>%
   select(
     observed = '{{DV}}',
     expected = fit
-  )
+  ) %>%
+  # remove rows where model can't make a prediction
+  drop_na(expected)
 
 # get uncertainty
 uncertainty <- sampling_distribution(model, '{{IV}}') %>%

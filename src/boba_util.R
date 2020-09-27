@@ -1,7 +1,7 @@
 # check if we support the model type
 # @param model The fitted model object
 is_supported <- function (model) {
-  ms <- c('lm', 'lmerMod', 'negbin', 'aov')
+  ms <- c('lm', 'lmerMod', 'negbin', 'aov', 'glm')
   return(class(model)[1] %in% ms)
 }
 
@@ -23,9 +23,8 @@ pointwise_predict <- function (model, df) {
       df = df.residual(model),                            # residual degrees of freedom
       sigma = sigma(model),                               # residual standard deviation
       se.residual = sqrt(sum(residuals(model)^2) / df)    # residual standard errors
-    ) %>%
-    # remove rows where model can't make a prediction
-    drop_na(fit)
+    )
+
   return(disagg_fit)
 }
 
@@ -83,7 +82,12 @@ cross_validation <- function (df, model, y, folds = 5, func = NULL) {
         expected <- pointwise_predict(m1, d_test)$fit
     }
 
-    mse = mse + sum((d_test[[y]] - expected)^2)
+    # get rid of NAs in either y or the model prediction
+    expected = tibble(fit=expected) %>% rowid_to_column
+    d_test = left_join(rowid_to_column(d_test), expected, by='rowid') %>%
+      drop_na(fit, !! sym(y))
+
+    mse = mse + sum((d_test[[y]] - d_test$fit)^2)
   }
 
   mse = sqrt(mse / nrow(df))
