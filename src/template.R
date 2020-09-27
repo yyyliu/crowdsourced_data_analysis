@@ -4,17 +4,20 @@
     {"var": "filter", "options": [
       "Female == 1",
       "UniqueFemaleContributors >= 1 & DebateSize > 1",
-      "Type == 2"
+      "Type == 2",
+      "Female_Contributions==UniqueFemaleContributors"
     ]},
     {"var": "DV", "options": [
       "ContributionsbyAuthor",
       "FemaleParticipation",
       "WC",
-      "CommentsChange"
+      "CommentsChange",
+      "NextFemale"
     ]},
     {"var": "IV", "options": [
       "UniqueFemaleContributors",
-      "FemaleCumulativeProportion"
+      "FemaleCumulativeProportion",
+      "FemalesInDiscussion"
     ]},
     {"var": "covariates", "options": [
       "+ PreviousContributions + HavePhD + Total_Citations",
@@ -31,10 +34,16 @@
       "condition": "filter.index == 0"},
     {"variable": "DV", "option": "WC", 
       "condition": "filter.index == 0"},
+    {"variable": "DV", "option": "NextFemale", 
+      "condition": "Unit == comment and IV == FemalesInDiscussion and Model == logistic"},
     {"variable": "IV", "option": "FemaleCumulativeProportion",
       "condition": "Unit == comment"},
+    {"variable": "IV", "option": "FemalesInDiscussion",
+      "condition": "Unit == comment and DV != ContributionsbyAuthor and DV != Female_Contributions"},
     {"variable": "covariates", "index": 0,
-      "condition": "Unit != thread"}
+      "condition": "Unit != thread"},
+    {"block": "Model", "option": "logistic",
+      "condition": "DV == NextFemale"}
   ],
   "before_execute": "rm -rf results && mkdir results"
 }
@@ -48,13 +57,17 @@ source('../../boba_util.R')
 df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 
 # augment the dataset with additional variables
-# cumulative proportion of females in each conversation
+# FemaleCumulativeProportion: cumulative proportion of females in each conversation
+# FemalesInDiscussion: cumulative sum of previous female contributors in a conversation
+# NextFemale: odds of next contributor to conversation being a woman
 df <- df %>% 
   group_by(ThreadId) %>% 
   mutate(FemaleCumulativeProportion = cummean(Female) * 100) %>% 
+  arrange(Order) %>%
+  mutate(FemalesInDiscussion=cumsum(Female), NextFemale =lead(Female)) %>%
   ungroup
 
-# difference between female comments in current conversation and previous conversation
+# CommentsChange: difference between female comments in current conversation and previous conversation
 tmp <- df %>%
   group_by(ThreadId, Id) %>% 
   summarise(comments_now = n(),
@@ -73,6 +86,9 @@ df <- df %>%
   filter({{filter}})
 
 # todo: remove the outlier in A6?
+
+# hack for the constraint to work
+formula = '{{IV}} {{DV}}'
 
 # --- (Unit) comment
 
@@ -118,10 +134,29 @@ df <- df %>%
 model <- lm({{DV}} ~ {{IV}} {{covariates}}, data=df)
 summary(model)
 
-# --- (O)
-# wrangle results
+# compute z score
 result <- tidy(model, conf.int = TRUE) %>%
-  filter(term == '{{IV}}')
+  filter(term == '{{IV}}') %>%
+  mutate(
+    z = qnorm(p.value),
+    # make z the same sign as the estimate
+    z = ifelse(sign(z)==sign(estimate), z, -z)
+  )
+
+# --- (Model) logistic
+model <- glm({{DV}} ~ {{IV}} {{covariates}}, data=df, family = binomial)
+summary(model)
+
+# compute z score
+result <- tidy(model, conf.int = TRUE) %>%
+  filter(term == '{{IV}}') %>%
+  mutate(
+    z = estimate/((estimate - conf.low) / qnorm(.975)),
+    # make z the same sign as the estimate
+    z = ifelse(sign(z)==sign(estimate), z, -z)
+  )
+
+# --- (O)
 
 # output
 write_csv(result, '../results/estimate_{{_n}}.csv')
