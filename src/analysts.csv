@@ -7,4 +7,5 @@ A7,Type == 2 & DebateSize > 1,Female,FemalePreviousCount,comment,logistic,+ Disc
 A9,,WC,FemaleCumulativeProportion,comment,lm,
 A13,Type == 2,FemaleParticipation,UniqueFemaleContributors,thread,lm,+ UniqueContributors
 A14,UniqueFemaleContributors >= 1 & UniqueContributors > 1,FemaleParticipation,UniqueFemaleContributors,thread,lm,
+A17,UniqueFemaleParticipation > 0 & UniqueFemaleParticipation < 1,MeanFemaleComments,UniqueFemaleParticipation,thread,kendall
 A19,,ContributionsbyAuthor,UniqueFemaleContributors,comment,lm,+ PreviousContributions + HavePhD + Total_Citations

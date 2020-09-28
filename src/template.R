@@ -6,6 +6,7 @@
       "Type == 2 & DebateSize > 1",
       "UniqueFemaleContributors >= 1 & UniqueContributors > 1", 
       "Female_Contributions==UniqueFemaleContributors",
+      "UniqueFemaleParticipation > 0 & UniqueFemaleParticipation < 1",
       ""
     ]},
     {"var": "DV", "options": [
@@ -15,14 +16,16 @@
       "CommentsChange",
       "NextFemale",
       "Female",
-      "Female_Contributions"
+      "Female_Contributions",
+      "MeanFemaleComments"
     ]},
     {"var": "IV", "options": [
       "UniqueFemaleContributors",
       "FemaleCumulativeProportion",
       "FemaleCurrentCount",
       "FemalePreviousCount",
-      "FemaleParticipation"
+      "FemaleParticipation",
+      "UniqueFemaleParticipation"
     ]},
     {"var": "covariates", "options": [
       "+ PreviousContributions + HavePhD + Total_Citations",
@@ -31,7 +34,7 @@
       ""
     ]},
     {"var": "female_only", 
-      "options": ["Female == 1", "", "Female == 1", "Female == 1", "", "", ""]}
+      "options": ["Female == 1", "", "Female == 1", "Female == 1", "", "", "", ""]}
   ],
   "constraints": [
     {"link": ["DV", "female_only"]},
@@ -45,6 +48,8 @@
       "condition": "Unit == comment and Model == logistic and IV == FemalePreviousCount"},
     {"variable": "DV", "option": "Female_Contributions", 
       "condition": "IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
+    {"variable": "DV", "option": "MeanFemaleComments",
+      "condition": "Unit != comment and IV != FemaleParticipation and filter.index == 4"},
     {"variable": "IV", "option": "FemaleCumulativeProportion",
       "condition": "Unit == comment"},
     {"variable": "IV", "option": "FemaleCurrentCount",
@@ -52,6 +57,8 @@
     {"variable": "IV", "option": "FemalePreviousCount",
       "condition": "Unit == comment"},
     {"variable": "covariates", "index": 0,
+      "condition": "Unit != thread"},
+    {"variable": "covariates", "index": 2,
       "condition": "Unit != thread"},
     {"block": "Model", "option": "logistic",
       "condition": "DV == NextFemale or DV == Female"}
@@ -69,6 +76,7 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 
 # augment the dataset with additional variables
 # FemaleCumulativeProportion: cumulative proportion of females in each conversation
+# MeanFemaleComments: proxy for average # of comments made by each woman in a conversation
 # FemaleCurrentCount: cumulative sum of female comments in a thread, including the current comment
 # FemalePreviousCount: cumulative sum of female comments in a thread, excluding the current comment
 # NextFemale: odds of next contributor to conversation being a woman
@@ -77,6 +85,7 @@ df <- df %>%
   mutate(FemaleCumulativeProportion = cummean(Female) * 100) %>% 
   arrange(Order) %>%
   mutate(
+    MeanFemaleComments = Female_Contributions/UniqueFemaleContributors,
     FemaleCurrentCount = cumsum(Female),
     FemalePreviousCount = cumsum(Female) - Female,
     NextFemale =lead(Female)) %>%
@@ -188,6 +197,16 @@ result <- tidy(model, conf.int = TRUE) %>%
     z = fr/se
   ) %>%
   select(-fr, -se)
+
+# --- (Model) kendall
+model = cor.test(df${{IV}}, df${{DV}}, method = 'kendall')
+summary(model)
+
+# todo: calculate z score
+result <- tidy(model, conf.int = TRUE) %>%
+  mutate(
+    z = NA
+  )
 
 # --- (O)
 
