@@ -1,0 +1,10 @@
+analyst,filter,DV,IV,Unit,Model,covariates
+A1,Female_Contributions==UniqueFemaleContributors,NextFemale,FemaleCurrentCount,comment,logistic,
+A4,,Female_Contributions,UniqueFemaleContributors,comment,pearson,
+A5,,Female_Contributions,FemaleParticipation,comment,pearson,
+A6,,CommentsChange,UniqueFemaleContributors,author,lm,
+A7,Type == 2 & DebateSize > 1,Female,FemalePreviousCount,comment,logistic,+ Discipline
+A9,,WC,FemaleCumulativeProportion,comment,lm,
+A13,Type == 2,FemaleParticipation,UniqueFemaleContributors,thread,lm,+ UniqueContributors
+A14,UniqueFemaleContributors >= 1 & UniqueContributors > 1,FemaleParticipation,UniqueFemaleContributors,thread,lm,
+A19,,ContributionsbyAuthor,UniqueFemaleContributors,comment,lm,+ PreviousContributions + HavePhD + Total_Citations

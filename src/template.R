@@ -4,7 +4,7 @@
     {"var": "filter", "options": [
       "Type == 2",
       "Type == 2 & DebateSize > 1",
-      "UniqueFemaleContributors >= 1 & DebateSize > 1", 
+      "UniqueFemaleContributors >= 1 & UniqueContributors > 1", 
       "Female_Contributions==UniqueFemaleContributors",
       ""
     ]},
