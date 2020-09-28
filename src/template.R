@@ -21,7 +21,8 @@
       "UniqueFemaleContributors",
       "FemaleCumulativeProportion",
       "FemaleCurrentCount",
-      "FemalePreviousCount"
+      "FemalePreviousCount",
+      "FemaleParticipation"
     ]},
     {"var": "covariates", "options": [
       "+ PreviousContributions + HavePhD + Total_Citations",
@@ -51,6 +52,8 @@
       "condition": "Unit == comment and DV != ContributionsbyAuthor and DV != Female_Contributions"},
     {"variable": "IV", "option": "FemalePreviousCount",
       "condition": "Unit == comment and DV != ContributionsbyAuthor and DV != Female_Contributions"},
+    {"variable": "IV", "option": "FemaleParticipation",
+      "condition": "DV == Female_Contributions"},
     {"variable": "covariates", "index": 0,
       "condition": "Unit != thread"},
     {"block": "Model", "option": "logistic",
