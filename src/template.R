@@ -29,21 +29,20 @@
       "+ UniqueContributors",
       "+ Discipline",
       ""
-    ]}
+    ]},
+    {"var": "female_only", 
+      "options": ["Female == 1", "", "Female == 1", "Female == 1", "", "", ""]}
   ],
   "constraints": [
+    {"link": ["DV", "female_only"]},
     {"variable": "DV", "option": "ContributionsbyAuthor", 
-      "condition": "Female_Only == yes and Unit != thread"},
+      "condition": "Unit != thread"},
     {"variable": "DV", "option": "FemaleParticipation",
       "condition": "Unit != comment"},
-    {"variable": "DV", "option": "CommentsChange", 
-      "condition": "Female_Only == yes"},
-    {"variable": "DV", "option": "WC", 
-      "condition": "Female_Only == yes"},
     {"variable": "DV", "option": "NextFemale",
-      "condition": "Unit == comment and Model == logistic and Female_Only == no and (IV == FemaleCurrentCount or IV == FemalePreviousCount)"},
+      "condition": "Unit == comment and Model == logistic and (IV == FemaleCurrentCount or IV == FemalePreviousCount)"},
     {"variable": "DV", "option": "Female",
-      "condition": "Unit == comment and Model == logistic and Female_Only == no and IV == FemalePreviousCount"},
+      "condition": "Unit == comment and Model == logistic and IV == FemalePreviousCount"},
     {"variable": "DV", "option": "Female_Contributions", 
       "condition": "IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
     {"variable": "IV", "option": "FemaleCumulativeProportion",
@@ -109,12 +108,9 @@ df <- df %>%
 # hack for the constraint to work
 formula = '{{IV}} {{DV}}'
 
-# --- (Female_Only) yes
-# include female comments only
+# some IV/DV requires us to include only female comments
 df <- df %>%
-  filter(Female == 1)
-
-# --- (Female_Only) no
+  filter({{female_only}})
 
 # --- (Unit) comment
 
