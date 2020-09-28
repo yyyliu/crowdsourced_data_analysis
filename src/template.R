@@ -2,11 +2,11 @@
 {
   "decisions": [
     {"var": "filter", "options": [
-      "Female == 1",
-      "UniqueFemaleContributors >= 1 & DebateSize > 1",
       "Type == 2",
-      "Type == 2 & DebateSize > 1", 
-      "Female_Contributions==UniqueFemaleContributors"
+      "Type == 2 & DebateSize > 1",
+      "UniqueFemaleContributors >= 1 & DebateSize > 1", 
+      "Female_Contributions==UniqueFemaleContributors",
+      ""
     ]},
     {"var": "DV", "options": [
       "ContributionsbyAuthor",
@@ -32,17 +32,17 @@
   ],
   "constraints": [
     {"variable": "DV", "option": "ContributionsbyAuthor", 
-      "condition": "filter.index == 0 and Unit != thread"},
+      "condition": "Female_Only == yes and Unit != thread"},
     {"variable": "DV", "option": "FemaleParticipation",
       "condition": "Unit != comment"},
     {"variable": "DV", "option": "CommentsChange", 
-      "condition": "filter.index == 0"},
+      "condition": "Female_Only == yes"},
     {"variable": "DV", "option": "WC", 
-      "condition": "filter.index == 0"},
+      "condition": "Female_Only == yes"},
     {"variable": "DV", "option": "NextFemale",
-      "condition": "Unit == comment and Model == logistic and filter.index != 0 and (IV == FemaleCurrentCount or IV == FemalePreviousCount)"},
+      "condition": "Unit == comment and Model == logistic and Female_Only == no and (IV == FemaleCurrentCount or IV == FemalePreviousCount)"},
     {"variable": "DV", "option": "Female",
-      "condition": "Unit == comment and Model == logistic and filter.index != 0 and IV == FemalePreviousCount"},
+      "condition": "Unit == comment and Model == logistic and Female_Only == no and IV == FemalePreviousCount"},
     {"variable": "DV", "option": "Female_Contributions", 
       "condition": "IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
     {"variable": "IV", "option": "FemaleCumulativeProportion",
@@ -101,9 +101,17 @@ df <- df %>%
   filter({{filter}})
 
 # todo: remove the outlier in A6?
+# todo: remove the outlier in A5?
 
 # hack for the constraint to work
 formula = '{{IV}} {{DV}}'
+
+# --- (Female_Only) yes
+# include female comments only
+df <- df %>%
+  filter(Female == 1)
+
+# --- (Female_Only) no
 
 # --- (Unit) comment
 
