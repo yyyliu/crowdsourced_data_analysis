@@ -14,7 +14,8 @@
       "WC",
       "CommentsChange",
       "NextFemale",
-      "Female"
+      "Female",
+      "Female_Contributions"
     ]},
     {"var": "IV", "options": [
       "UniqueFemaleContributors",
@@ -42,6 +43,8 @@
       "condition": "Unit == comment and Model == logistic and filter.index != 0 and (IV == FemaleCurrentCount or IV == FemalePreviousCount)"},
     {"variable": "DV", "option": "Female",
       "condition": "Unit == comment and Model == logistic and filter.index != 0 and IV == FemalePreviousCount"},
+    {"variable": "DV", "option": "Female_Contributions", 
+      "condition": "IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
     {"variable": "IV", "option": "FemaleCumulativeProportion",
       "condition": "Unit == comment"},
     {"variable": "IV", "option": "FemaleCurrentCount",
@@ -167,6 +170,19 @@ result <- tidy(model, conf.int = TRUE) %>%
     # make z the same sign as the estimate
     z = ifelse(sign(z)==sign(estimate), z, -z)
   )
+
+# --- (Model) pearson
+model = cor.test(df${{IV}}, df${{DV}})
+summary(model)
+
+# compute z score
+result <- tidy(model, conf.int = TRUE) %>%
+  mutate(
+    fr = 0.5 * log((1 + estimate)/(1 - estimate)),
+    se = sqrt(1/(parameter - 3)),
+    z = fr/se
+  ) %>%
+  select(-fr, -se)
 
 # --- (O)
 
