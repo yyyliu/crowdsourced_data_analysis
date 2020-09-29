@@ -1,5 +1,6 @@
 analyst,filter,DV,IV,Unit,Model,covariates,random_term
 A1,Female_Contributions==UniqueFemaleContributors,NextFemale,FemaleCurrentCount,comment,logistic,,
+A3,DebateSize > 1,ContributionsbyAuthor,UniqueFemaleParticipation,comment,poisson,+ AuthorPreviousComments,+ (1 + UniqueFemaleParticipation | Id_num) + (1 | ThreadId)
 A4,,Female_Contributions,UniqueFemaleContributors,comment,pearson,,
 A5,,Female_Contributions,FemaleParticipation,comment,pearson,,
 A6,,CommentsChange,UniqueFemaleContributors,author,lm,,

@@ -3,6 +3,7 @@
   "decisions": [
     {"var": "filter", "options": [
       "Type == 2",
+      "DebateSize > 1",
       "Type == 2 & DebateSize > 1",
       "UniqueFemaleContributors >= 1 & UniqueContributors > 1", 
       "Female_Contributions==UniqueFemaleContributors",
@@ -32,14 +33,16 @@
       "+ UniqueContributors",
       "+ Discipline",
       "+ LiveEver + DebateSizeZ",
+      "+ AuthorPreviousComments",
       ""
     ]},
     {"var": "random_term", "options": [
       "+ (1|ThreadId)",
+      "+ (1 + UniqueFemaleParticipation | Id_num) + (1 | ThreadId)",
       ""
     ]},
     {"var": "glm_call", 
-      "options": ["glmer", "glm"]},
+      "options": ["glmer", "glmer", "glm"]},
     {"var": "female_only", 
       "options": ["Female == 1", "", "Female == 1", "Female == 1", "", "", "", ""]}
   ],
@@ -57,7 +60,7 @@
     {"variable": "DV", "option": "Female_Contributions", 
       "condition": "IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
     {"variable": "DV", "option": "MeanFemaleComments",
-      "condition": "Unit != comment and IV != FemaleParticipation and filter.index == 4"},
+      "condition": "Unit != comment and IV != FemaleParticipation and filter.index == 5"},
     {"variable": "IV", "option": "FemaleCumulativeProportion",
       "condition": "Unit == comment"},
     {"variable": "IV", "option": "FemaleCurrentCount",
@@ -70,6 +73,10 @@
       "condition": "Unit != thread"},
     {"variable": "covariates", "index": 3,
       "condition": "Unit == thread"},
+    {"variable": "covariates", "index": 4,
+      "condition": "Unit != thread and DV == ContributionsbyAuthor"},
+    {"variable": "random_term", "index": 1,
+      "condition": "Unit != thread and IV == UniqueFemaleParticipation"},
     {"block": "Model", "option": "logistic",
       "condition": "DV == NextFemale or DV == Female"}
   ],
@@ -102,6 +109,12 @@ df <- df %>%
     FemalePreviousCount = cumsum(Female) - Female,
     NextFemale =lead(Female)) %>%
   ungroup
+
+# AuthorPreviousComments: mean number of previous comments per thread, avoiding division by zero
+df <- df %>%
+  mutate(
+    AuthorPreviousComments = PreviousContributions / (PreviousThreads + 0^PreviousThreads)
+  )
 
 # CommentsChange: difference between female comments in current conversation and previous conversation
 tmp <- df %>%
