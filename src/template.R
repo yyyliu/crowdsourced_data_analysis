@@ -80,7 +80,9 @@
     {"block": "Model", "option": "logistic",
       "condition": "DV == NextFemale or DV == Female"}
   ],
-  "before_execute": "rm -rf results && mkdir results"
+  "before_execute": "rm -rf results && mkdir results",
+  "after_execute": "boba merge estimate_{}.csv -b results --out estimate.csv",
+  "visualizer": "visualizer_config.json"
 }
 # --- (END)
 

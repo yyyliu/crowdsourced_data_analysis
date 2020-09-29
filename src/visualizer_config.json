@@ -1,0 +1,16 @@
+{
+  "files": [
+    {"id": "est", "path": "estimate.csv"}
+  ],
+  "schema": {
+    "point_estimate": {"file": "est", "field": "z"}
+  },
+  "labels": {
+    "dataset": "Crowdsourcing Hypothesis 1",
+    "x_axis": "z score",
+    "x_axis_fit": "TODO",
+    "fit_range": [0, 1],
+    "x_range": [-10, 120],
+    "x_range_outer": [-120, 300]
+  }
+}
