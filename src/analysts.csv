@@ -1,11 +1,12 @@
-analyst,filter,DV,IV,Unit,Model,covariates
-A1,Female_Contributions==UniqueFemaleContributors,NextFemale,FemaleCurrentCount,comment,logistic,
-A4,,Female_Contributions,UniqueFemaleContributors,comment,pearson,
-A5,,Female_Contributions,FemaleParticipation,comment,pearson,
-A6,,CommentsChange,UniqueFemaleContributors,author,lm,
-A7,Type == 2 & DebateSize > 1,Female,FemalePreviousCount,comment,logistic,+ Discipline
-A9,,WC,FemaleCumulativeProportion,comment,lm,
-A13,Type == 2,FemaleParticipation,UniqueFemaleContributors,thread,lm,+ UniqueContributors
-A14,UniqueFemaleContributors >= 1 & UniqueContributors > 1,FemaleParticipation,UniqueFemaleContributors,thread,lm,
-A17,UniqueFemaleParticipation > 0 & UniqueFemaleParticipation < 1,MeanFemaleComments,UniqueFemaleParticipation,thread,kendall
-A19,,ContributionsbyAuthor,UniqueFemaleContributors,comment,lm,+ PreviousContributions + HavePhD + Total_Citations
+analyst,filter,DV,IV,Unit,Model,covariates,random_term
+A1,Female_Contributions==UniqueFemaleContributors,NextFemale,FemaleCurrentCount,comment,logistic,,
+A4,,Female_Contributions,UniqueFemaleContributors,comment,pearson,,
+A5,,Female_Contributions,FemaleParticipation,comment,pearson,,
+A6,,CommentsChange,UniqueFemaleContributors,author,lm,,
+A7,Type == 2 & DebateSize > 1,Female,FemalePreviousCount,comment,logistic,+ Discipline,
+A9,,WC,FemaleCumulativeProportion,comment,lm,,
+A12,UniqueFemaleContributors >= 1 & UniqueContributors > 1,Female_Contributions,UniqueFemaleParticipation,thread,poisson,+ LiveEver + DebateSizeZ,
+A13,Type == 2,FemaleParticipation,UniqueFemaleContributors,thread,lm,+ UniqueContributors,
+A14,UniqueFemaleContributors >= 1 & UniqueContributors > 1,FemaleParticipation,UniqueFemaleContributors,thread,lm,,
+A17,UniqueFemaleParticipation > 0 & UniqueFemaleParticipation < 1,MeanFemaleComments,UniqueFemaleParticipation,thread,kendall,
+A19,,ContributionsbyAuthor,UniqueFemaleContributors,comment,lm,+ PreviousContributions + HavePhD + Total_Citations,

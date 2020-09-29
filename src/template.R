@@ -31,13 +31,21 @@
       "+ PreviousContributions + HavePhD + Total_Citations",
       "+ UniqueContributors",
       "+ Discipline",
+      "+ LiveEver + DebateSizeZ",
       ""
     ]},
+    {"var": "random_term", "options": [
+      "+ (1|ThreadId)",
+      ""
+    ]},
+    {"var": "glm_call", 
+      "options": ["glmer", "glm"]},
     {"var": "female_only", 
       "options": ["Female == 1", "", "Female == 1", "Female == 1", "", "", "", ""]}
   ],
   "constraints": [
     {"link": ["DV", "female_only"]},
+    {"link": ["random_term", "glm_call"]},
     {"variable": "DV", "option": "ContributionsbyAuthor", 
       "condition": "Unit != thread and IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleParticipation"},
     {"variable": "DV", "option": "FemaleParticipation",
@@ -60,6 +68,8 @@
       "condition": "Unit != thread"},
     {"variable": "covariates", "index": 2,
       "condition": "Unit != thread"},
+    {"variable": "covariates", "index": 3,
+      "condition": "Unit == thread"},
     {"block": "Model", "option": "logistic",
       "condition": "DV == NextFemale or DV == Female"}
   ],
@@ -82,7 +92,9 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 # NextFemale: odds of next contributor to conversation being a woman
 df <- df %>% 
   group_by(ThreadId) %>% 
-  mutate(FemaleCumulativeProportion = cummean(Female) * 100) %>% 
+  mutate(
+    FemaleCumulativeProportion = cummean(Female) * 100
+  ) %>% 
   arrange(Order) %>%
   mutate(
     MeanFemaleComments = Female_Contributions/UniqueFemaleContributors,
@@ -105,9 +117,25 @@ tmp <- df %>%
 
 df = left_join(df, tmp, by=c('Id' = 'Id', 'ThreadId' = 'ThreadId'))
 
+# LiveEver: whether the thread has ever been live
+tmp <- df %>% 
+  select(ThreadId, Live) %>%
+  distinct %>%
+  group_by(ThreadId) %>%
+  mutate(
+    LiveEver = as.numeric(ifelse(any(Live == 1), 1, Live))
+  ) %>%
+  select(LiveEver, ThreadId) %>%
+  distinct
+
+df = left_join(df, tmp, by=c('ThreadId' = 'ThreadId'))
+
 # filtering
 df <- df %>%
   filter({{filter}})
+
+# DebateSizeZ: appeared in A12, must be done after filtering
+df$DebateSizeZ <- with(df, (DebateSize - mean(DebateSize)) / sd(DebateSize))
 
 # todo: remove the outlier in A6?
 # todo: remove the outlier in A5?
@@ -207,6 +235,20 @@ result <- tidy(model, conf.int = TRUE) %>%
   mutate(
     z = NA
   )
+
+# --- (Model) poisson
+library(lme4)
+
+# hack for constraint to work
+tmp = '{{random_term}}'
+
+model = {{glm_call}}({{DV}} ~ {{IV}} {{covariates}} {{random_term}},
+  data = df, family = poisson)
+summary(model)
+
+result <- tidy(model, conf.int = TRUE) %>%
+  filter(term == '{{IV}}') %>%
+  mutate(z = statistic)
 
 # --- (O)
 

@@ -12,7 +12,8 @@ for idx, row in taken.iterrows():
     (df['filter'] == row['filter']) &
     (df['DV'] == row['DV']) &
     (df['IV'] == row['IV']) &
-    (df['covariates'] == row['covariates'])
+    (df['covariates'] == row['covariates']) &
+    (df['random_term'] == row['random_term'])
   ]
   if res.shape[0] > 0:
     print(f'{row.analyst} is {res.Filename.iloc[0]}')
