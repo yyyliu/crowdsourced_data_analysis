@@ -210,7 +210,11 @@ summary(model)
 result <- tidy(model, conf.int = TRUE) %>%
   filter(term == '{{IV}}') %>%
   mutate(
-    z = qnorm(p.value),
+    # they seem to calculate p value from t distribution when the model summary
+    # do not report the exact p-value, usually because it's very small
+    p = pt(statistic, df.residual(model), lower.tail=FALSE),
+    p = ifelse(p.value > 1e-14, p.value, p),
+    z = qnorm(p),
     # make z the same sign as the estimate
     z = ifelse(sign(z)==sign(estimate), z, -z)
   )
@@ -223,14 +227,12 @@ summary(model)
 result <- tidy(model, conf.int = TRUE) %>%
   filter(term == '{{IV}}') %>%
   mutate(
-    z = estimate/((estimate - conf.low) / qnorm(.975)),
-    # make z the same sign as the estimate
-    z = ifelse(sign(z)==sign(estimate), z, -z)
+    z = statistic
   )
 
 # --- (Model) pearson
 model = cor.test(df${{IV}}, df${{DV}})
-summary(model)
+model
 
 # compute z score
 result <- tidy(model, conf.int = TRUE) %>%
@@ -243,12 +245,12 @@ result <- tidy(model, conf.int = TRUE) %>%
 
 # --- (Model) kendall
 model = cor.test(df${{IV}}, df${{DV}}, method = 'kendall')
-summary(model)
+model
 
-# todo: calculate z score
+# calculate z score
 result <- tidy(model, conf.int = TRUE) %>%
   mutate(
-    z = NA
+    z = statistic
   )
 
 # --- (Model) poisson
