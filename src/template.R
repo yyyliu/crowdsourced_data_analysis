@@ -81,7 +81,7 @@
       "condition": "DV == NextFemale or DV == Female"}
   ],
   "before_execute": "rm -rf results && mkdir results",
-  "after_execute": "boba merge estimate_{}.csv -b results --out estimate.csv",
+  "after_execute": "cp ../after_execute.sh ./ && sh after_execute.sh",
   "visualizer": "visualizer_config.json"
 }
 # --- (END)
