@@ -4,14 +4,15 @@
   ],
   "schema": {
     "point_estimate": {"file": "est", "field": "z"},
-    "p_value": {"file": "est", "field": "p.value"}
+    "p_value": {"file": "est", "field": "p.value"},
+    "annotation": {"file": "est", "field": "analyst"}
   },
   "labels": {
     "dataset": "H1",
     "x_axis": "z score",
     "x_axis_fit": "TODO",
     "fit_range": [0, 1],
-    "x_range": [-30, 40],
-    "x_range_outer": [-120, 300]
+    "x_range": [-120, 120],
+    "x_range_outer": [-300, 300]
   }
 }
