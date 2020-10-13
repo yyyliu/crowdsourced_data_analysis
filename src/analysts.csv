@@ -1,14 +1,14 @@
-analyst,filter,DV,IV,Unit,Model,covariates,random_term
-A1,Female_Contributions==UniqueFemaleContributors,NextFemale,FemaleCurrentCount,comment,logistic,,
-A3,DebateSize > 1,ContributionsbyAuthor,UniqueFemaleParticipation,comment,poisson,+ AuthorPreviousComments,+ (1 + UniqueFemaleParticipation | Id_num) + (1 | ThreadId)
-A4,,Female_Contributions,UniqueFemaleContributors,comment,pearson,,
-A5,,Female_Contributions,FemaleParticipation,comment,pearson,,
-A6,,CommentsChange,UniqueFemaleContributors,author,lm,,
-A7,Type == 2 & DebateSize > 1,Female,FemalePreviousCount,comment,logistic,+ Discipline,
-A9,,WC,FemaleCumulativeProportion,comment,lm,,
-A11,,ContributionsbyAuthor,UniqueFemaleContributors,author,poisson,,+ (1|ThreadId)
-A12,UniqueFemaleContributors >= 1 & UniqueContributors > 1,Female_Contributions,UniqueFemaleParticipation,thread,poisson,+ LiveEver + DebateSizeZ,
-A13,Type == 2,FemaleParticipation,UniqueFemaleContributors,thread,lm,+ UniqueContributors,
-A14,UniqueFemaleContributors >= 1 & UniqueContributors > 1,FemaleParticipation,UniqueFemaleContributors,thread,lm,,
-A17,UniqueFemaleParticipation > 0 & UniqueFemaleParticipation < 1,MeanFemaleComments,UniqueFemaleParticipation,thread,kendall,
-A19,,ContributionsbyAuthor,UniqueFemaleContributors,comment,lm,+ PreviousContributions + HavePhD + Total_Citations,
+analyst,filter,DV,IV,Unit,Model,covariates,random_term,z,p.value
+A1,Female_Contributions==UniqueFemaleContributors,NextFemale,FemaleCurrentCount,comment,logistic,,,9.87975,5.09593e-23
+A3,DebateSize > 1,ContributionsbyAuthor,UniqueFemaleParticipation,comment,poisson,+ AuthorPreviousComments,+ (1 + UniqueFemaleParticipation | Id_num) + (1 | ThreadId),3.45272,5.54953e-4
+A4,,Female_Contributions,UniqueFemaleContributors,comment,pearson,,,118.2963,0
+A5,,Female_Contributions,FemaleParticipation,comment,pearson,,,10.00567,7.20e-24
+A6,,CommentsChange,UniqueFemaleContributors,author,lm,,,-2.28693,0.0111
+A7,Type == 2 & DebateSize > 1,Female,FemalePreviousCount,comment,logistic,+ Discipline,,15.58500,9.13787e-55
+A9,,WC,FemaleCumulativeProportion,comment,lm,,,11.82444,2.90816e-32
+A11,,ContributionsbyAuthor,UniqueFemaleContributors,author,poisson,,+ (1|ThreadId),-1.807,0.070757
+A12,UniqueFemaleContributors >= 1 & UniqueContributors > 1,Female_Contributions,UniqueFemaleParticipation,thread,poisson,+ LiveEver + DebateSizeZ,,9.105,8.58919e-20
+A13,Type == 2,FemaleParticipation,UniqueFemaleContributors,thread,lm,+ UniqueContributors,,13.70766,9.125719e-43
+A14,UniqueFemaleContributors >= 1 & UniqueContributors > 1,FemaleParticipation,UniqueFemaleContributors,thread,lm,,,1.60725,0.946
+A17,UniqueFemaleParticipation > 0 & UniqueFemaleParticipation < 1,MeanFemaleComments,UniqueFemaleParticipation,thread,kendall,,,-0.31419,0.7534
+A19,,ContributionsbyAuthor,UniqueFemaleContributors,comment,lm,+ PreviousContributions + HavePhD + Total_Citations,,-7.13873,4.711277e-13

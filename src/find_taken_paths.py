@@ -3,6 +3,8 @@ import pandas as pd
 import click
 import os
 import re
+import subprocess
+import math
 
 
 def find_taken_paths (fn='multiverse/summary.csv'):
@@ -37,10 +39,58 @@ def fn_to_uid (fn):
   return -1
 
 
+def compare_outputs (actual, expected):
+  """ helper function for testing """
+  res = ''
+
+  for col in ['z', 'p.value']:
+    ve = expected[col].iloc[0]
+    va = actual[col][0]
+    if not math.isclose(ve, va, rel_tol=1e-4):
+      res += f'Expected {col}={ve}, actual {col}={va}\n'
+
+  return res
+
+
+def run_test (analysts, base='multiverse/'):
+  """ run the scripts and compare outputs to expected values """
+  taken = pd.read_csv('analysts.csv')
+  passed = []
+  failed = []
+
+  for a in analysts:
+    team = a['analyst']
+    print(f'Running {team}')
+
+    # run the corresponding script
+    args = ['Rscript', a['uid']]
+    p = os.path.join(base, 'code')
+    subprocess.run(args, cwd=p, capture_output=True)
+
+    # read output
+    uid = fn_to_uid(a['uid'])
+    p = os.path.join(base, 'results', f'estimate_{uid}.csv')
+    actual = pd.read_csv(p)
+
+    # compare with expected
+    err = compare_outputs(actual, taken.loc[taken['analyst'] == team])
+    if err:
+      failed.append({'analyst': team, 'error': err})
+    else:
+      passed.append(team)
+
+  # print test summary
+  print(f'Done.\n\n{len(passed)} passed:\n{", ".join(passed)}')
+  print('\nThe following tests failed:\n')
+  for f in failed:
+    print(f['analyst'], f['error'])
+
+
 @click.command()
 @click.option('--summary', default='multiverse/summary.csv', help='Path to summary.csv')
 @click.option('--save', default='', help='CSV file to save this as a column')
-def main (summary, save):
+@click.option('--test', is_flag=True, help='Run and verify outputs')
+def main (summary, save, test):
   res = find_taken_paths(summary)
 
   if save:
@@ -61,6 +111,9 @@ def main (summary, save):
 
     # save
     df.to_csv(save)
+
+  elif test:
+    run_test(res) #todo: add dir
 
   else:
     # print
