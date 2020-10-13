@@ -18,7 +18,8 @@
       "NextFemale",
       "Female",
       "Female_Contributions",
-      "MeanFemaleComments"
+      "MeanFemaleComments",
+      "NumPosts"
     ]},
     {"var": "IV", "options": [
       "UniqueFemaleContributors",
@@ -26,7 +27,8 @@
       "FemaleCurrentCount",
       "FemalePreviousCount",
       "FemaleParticipation",
-      "UniqueFemaleParticipation"
+      "UniqueFemaleParticipation",
+      "NumFemale"
     ]},
     {"var": "covariates", "options": [
       "+ PreviousContributions + HavePhD + Total_Citations",
@@ -44,7 +46,7 @@
     {"var": "glm_call", 
       "options": ["glmer", "glmer", "glm"]},
     {"var": "female_only", 
-      "options": ["Female == 1", "", "Female == 1", "Female == 1", "", "", "", ""]}
+      "options": ["Female == 1", "", "Female == 1", "Female == 1", "", "", "", "", ""]}
   ],
   "constraints": [
     {"link": ["DV", "female_only"]},
@@ -61,12 +63,16 @@
       "condition": "IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
     {"variable": "DV", "option": "MeanFemaleComments",
       "condition": "Unit != comment and filter.index == 5 and (IV == UniqueFemaleParticipation or IV == UniqueFemaleContributors)"},
+    {"variable": "DV", "option": "NumPosts",
+      "condition": "Unit == custom"},
     {"variable": "IV", "option": "FemaleCumulativeProportion",
       "condition": "Unit == comment"},
     {"variable": "IV", "option": "FemaleCurrentCount",
       "condition": "Unit == comment"},
     {"variable": "IV", "option": "FemalePreviousCount",
       "condition": "Unit == comment"},
+    {"variable": "IV", "option": "NumFemale",
+      "condition": "Unit == custom"},
     {"variable": "covariates", "index": 0,
       "condition": "Unit != thread"},
     {"variable": "covariates", "index": 2,
@@ -77,6 +83,8 @@
       "condition": "Unit != thread and DV == ContributionsbyAuthor"},
     {"variable": "random_term", "index": 1,
       "condition": "Unit != thread and IV == UniqueFemaleParticipation"},
+    {"block": "Unit", "option": "custom",
+      "condition": "DV == NumPosts and IV == NumFemale"},
     {"block": "Model", "option": "logistic",
       "condition": "DV == NextFemale or DV == Female"}
   ],
@@ -183,24 +191,26 @@ df <- df %>%
   ungroup %>%
   distinct(ThreadId, Id, .keep_all = TRUE)
 
-# # --- (Unit) custom_A2
-# # calculate the DV and IV for A2
-# # number of female contributors ordered by time of commenting (first, second, third female contributor, etc)
-# df <- df %>%
-#   filter(Female == 1) %>%
-#   arrange(ThreadId, Id_num, Order) %>% 
-#   group_by(ThreadId, Id_num) %>%
-#   mutate(first_post = c(1, rep(0,n()-1))) %>% # mark 1st post 1, others 0
-#   ungroup() %>%
-#   arrange(ThreadId, Order) %>% 
-#   group_by(ThreadId) %>% 
-#   mutate(n_females = lag(cumsum(first_post)),
-#          n_females = ifelse(is.na(n_females), 0, n_females)
-#   ) %>%
-#   ungroup() %>%
-#   group_by(ThreadId, n_females) %>%
-#   summarise(n_posts= n()) %>%
-#   ungroup()
+# --- (Unit) custom
+# A custom unit of analysis by A2. se also hardcode other decisions here.
+# NumFemale: number of female contributors in the thread before this comment
+# NumPosts: proxy for number of comments by each female contributor
+df <- df %>%
+  filter(Female == 1) %>%
+  arrange(ThreadId, Id_num, Order) %>% 
+  group_by(ThreadId, Id_num) %>%
+  mutate(first_post = c(1, rep(0,n()-1))) %>% # mark 1st post 1, others 0
+  ungroup() %>%
+  arrange(ThreadId, Order) %>% 
+  group_by(ThreadId) %>% 
+  mutate(NumFemale = lag(cumsum(first_post)),
+         NumFemale = ifelse(is.na(NumFemale), 0, NumFemale)
+  ) %>%
+  ungroup() %>%
+  group_by(ThreadId, NumFemale) %>%
+  summarise(NumPosts= n()) %>%
+  ungroup() %>%
+  filter(NumFemale > 0)
 
 # --- (Model) lm
 model <- lm({{DV}} ~ {{IV}} {{covariates}}, data=df)
