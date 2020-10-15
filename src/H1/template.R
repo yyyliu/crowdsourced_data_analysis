@@ -97,7 +97,7 @@
 library(readr)
 library(tidyverse)
 library(broom.mixed)
-source('../../boba_util.R')
+source('../../../boba_util.R')
 
 df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 

@@ -7,10 +7,12 @@ import subprocess
 import math
 
 
-def find_taken_paths (fn='multiverse/summary.csv'):
+def find_taken_paths (fn='multiverse'):
   """ find the universes correponding to the analyst's scripts """
-  taken = pd.read_csv('analysts.csv', dtype=str, na_filter=False)
+  fna = os.path.join(fn, '..', 'analysts.csv')
+  taken = pd.read_csv(fna, dtype=str, na_filter=False)
 
+  fn = os.path.join(fn, 'summary.csv')
   df = pd.read_csv(fn, dtype=str, na_filter=False)
 
   found = []
@@ -52,9 +54,10 @@ def compare_outputs (actual, expected):
   return res
 
 
-def run_test (analysts, base='multiverse/'):
+def run_test (analysts, base='multiverse'):
   """ run the scripts and compare outputs to expected values """
-  taken = pd.read_csv('analysts.csv')
+  fn = os.path.join(base, '..', 'analysts.csv')
+  taken = pd.read_csv(fn)
   passed = []
   failed = []
 
@@ -87,14 +90,20 @@ def run_test (analysts, base='multiverse/'):
 
 
 @click.command()
-@click.option('--summary', default='multiverse/summary.csv', help='Path to summary.csv')
-@click.option('--save', default='', help='CSV file to save this as a column')
+@click.option('--dir', '_dir', default='multiverse', help='Path to the multiverse folder')
+@click.option('--save', default='', help='CSV file (relative to dir) to save this as a column')
 @click.option('--test', is_flag=True, help='Run and verify outputs')
-def main (summary, save, test):
-  res = find_taken_paths(summary)
+def main (_dir, save, test):
+  # check path
+  if not os.path.exists(_dir):
+    print(f'Cannot find the directory: {_dir}')
+    return
+
+  res = find_taken_paths(_dir)
 
   if save:
     # check path
+    save = os.path.join(_dir, save)
     if not os.path.exists(save):
       print(f'Cannot find the file {save}')
       return
@@ -113,7 +122,7 @@ def main (summary, save, test):
     df.to_csv(save)
 
   elif test:
-    run_test(res) #todo: add dir
+    run_test(res, _dir)
 
   else:
     # print
