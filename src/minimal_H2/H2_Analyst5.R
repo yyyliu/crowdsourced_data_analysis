@@ -11,12 +11,6 @@ edge <- read.csv("../data/edge1.1_anonymized.csv")
 
 # remove NA values
 edge <- edge[complete.cases(edge), ]
-
-# select columns related to 2nd Hypothesis
-edge.2hyp <- edge %>%
-  select(ContributionsThisYear, Discipline, Years_from_PhD, PhD_Institution_SR_Bin,
-         PhD_Institution_US_IR_Bin, PhD_Institution_US_Bin, ThreadsThisYear,
-         Job_Title_S, HavePhD)
   
 # let's get summary statistics of Threads This Year vs Job Title
 edge.2hyp.fit <- lm(ThreadsThisYear ~ Job_Title_S, data = edge.2hyp)

@@ -5,19 +5,28 @@
       ""
     ]},
     {"var": "DV", "options": [
-      "LogNumChar"
+      "LogNumChar",
+      "ThreadsThisYear"
     ]},
     {"var": "IV", "options": [
-      "AcademicHierarchyStrict"
+      "AcademicHierarchyStrict",
+      "Job_Title_S"
     ]},
     {"var": "random_term", "options": [
       ""
     ]},
     {"var": "covariates", "options": [
+      "",
       "+ Female + Academic"
+    ]},
+    {"var": "IV_alias", "options": [
+      "AcademicHierarchyStrict",
+      "Job_Title_SChaired Professor"
     ]}
   ],
-  "constraints": [],
+  "constraints": [
+    {"link": ["IV", "IV_alias"]}
+  ],
   "before_execute": "rm -rf results && mkdir results",
   "after_execute": "cp ../after_execute.sh ./ && sh after_execute.sh"
 }
@@ -34,6 +43,8 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 df <- df %>%
   mutate(LogNumChar=log(Number.Characters))
 
+# todo: exclude all NAs as in A5?
+
 # hack
 tmp = '{{random_term}} {{filter}}'
 
@@ -45,7 +56,7 @@ summary(model)
 
 # compute z score
 result <- tidy(model, conf.int = TRUE) %>%
-  filter(term == '{{IV}}') %>%
+  filter(term == '{{IV_alias}}') %>%
   mutate(
     # they seem to calculate p value from t distribution when the model summary
     # do not report the exact p-value, usually because it's very small
