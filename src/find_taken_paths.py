@@ -61,7 +61,15 @@ def run_test (analysts, base='multiverse'):
   passed = []
   failed = []
 
+  p = os.path.join(base, 'results')
+  if not os.path.exists(p):
+    os.mkdir(p)
+
   for a in analysts:
+    # if file not found, skip
+    if not a['uid']:
+      continue
+
     team = a['analyst']
     print(f'Running {team}')
 

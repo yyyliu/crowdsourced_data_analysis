@@ -1,5 +1,5 @@
-analyst,z,p.value,estimate
-A1,,8.50e-05,-0.16150
+analyst,filter,DV,IV,Unit,Model,covariates,random_term,z,p.value,estimate
+A1,,LogNumChar,AcademicHierarchyStrict,comment,lm,+ Female + Academic,,-3.75987,8.50e-05,-0.16150
 A3,,0.0194,0.04349
 A5,,3.8810,9.43e-14
 A6,,0.52851,-64.38
