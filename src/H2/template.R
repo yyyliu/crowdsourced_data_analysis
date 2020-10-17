@@ -8,12 +8,14 @@
     {"var": "DV", "options": [
       "LogNumChar",
       "ThreadsThisYear",
-      "MeanWC"
+      "MeanWC",
+      "WC"
     ]},
     {"var": "IV", "options": [
       "AcademicHierarchyStrict",
       "Job_Title_S",
-      "LogCitations"
+      "LogCitations",
+      "PhdRanking"
     ]},
     {"var": "random_term", "options": [
       ""
@@ -26,7 +28,8 @@
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
       "Job_Title_SChaired Professor",
-      "LogCitations"
+      "LogCitations",
+      "PhdRanking"
     ]}
   ],
   "constraints": [
@@ -36,6 +39,8 @@
     {"variable": "DV", "option": "ThreadsThisYear",
       "condition": "Unit == comment"},
     {"variable": "DV", "option": "MeanWC",
+      "condition": "Unit == author"},
+    {"variable": "IV", "option": "PhdRanking",
       "condition": "Unit == author"}
   ],
   "before_execute": "rm -rf results && mkdir results",
@@ -52,10 +57,16 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 
 # LogNumChar: the natural log of Number.Characters
 # LogCitations: the natural log of Citations_Cumulative
+# PhdRanking: combined ranking of whether they have PhD and the rank of their academic workplace
 df <- df %>%
   mutate(
     LogNumChar=log(Number.Characters),
-    LogCitations = log(Citations_Cumulative)
+    LogCitations = log(Citations_Cumulative),
+    PhdRanking = ifelse(HavePhD == 1, ifelse(!is.na(Workplace_SR_Bin), 
+      Workplace_SR_Bin, "no_rank"), "no_phd"),
+    PhdRanking = forcats::fct_relevel(PhdRanking, "no_phd", "no_rank", 
+      "7", "6", "5", "4", "3", "2", "1"),
+    PhdRanking = as.numeric(PhdRanking)
   )
 
 # MeanWC: average # words for each contributor in a single conversation
@@ -81,6 +92,10 @@ tmp = '{{random_term}}'
 # --- (Unit) author
 df <- df %>%
   group_by(Id) %>%
+  mutate(
+    WC = mean(WC, na.rm = T),
+    PhdRanking = mean(PhdRanking)
+  ) %>%
   slice(1) %>%
   ungroup()
 
