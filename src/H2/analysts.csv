@@ -3,7 +3,7 @@ A1,,LogNumChar,AcademicHierarchyStrict,comment,lm,+ Female + Academic,,-3.75987,
 A3,,0.0194,0.04349
 A5,,ThreadsThisYear,Job_Title_S,comment,lm,,,7.35664,9.43e-14,3.8810
 A6,"Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)",MeanWC,AcademicHierarchyStrict,author,lm,,,-0.071532,0.52851,-64.38
-A7,,5.08e-05,-0.22119
+A7,,LogNumChar,LogCitations,comment,lm,+ AcademicHierarchyStrict + Discipline,,-3.88674,5.08e-05,-0.22119
 A9,,9.29e-09,69.70
 A10,,1.36e-05,0.12150
 A11,,0.1960,0.09032

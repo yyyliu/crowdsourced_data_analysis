@@ -12,18 +12,21 @@
     ]},
     {"var": "IV", "options": [
       "AcademicHierarchyStrict",
-      "Job_Title_S"
+      "Job_Title_S",
+      "LogCitations"
     ]},
     {"var": "random_term", "options": [
       ""
     ]},
     {"var": "covariates", "options": [
       "",
-      "+ Female + Academic"
+      "+ Female + Academic",
+      "+ AcademicHierarchyStrict + Discipline"
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
-      "Job_Title_SChaired Professor"
+      "Job_Title_SChaired Professor",
+      "LogCitations"
     ]}
   ],
   "constraints": [
@@ -48,8 +51,12 @@ source('../../../boba_util.R')
 df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 
 # LogNumChar: the natural log of Number.Characters
+# LogCitations: the natural log of Citations_Cumulative
 df <- df %>%
-  mutate(LogNumChar=log(Number.Characters))
+  mutate(
+    LogNumChar=log(Number.Characters),
+    LogCitations = log(Citations_Cumulative)
+  )
 
 # MeanWC: average # words for each contributor in a single conversation
 tmp <- df %>%
