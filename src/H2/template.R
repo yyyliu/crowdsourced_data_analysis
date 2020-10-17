@@ -2,11 +2,13 @@
 {
   "decisions": [
     {"var": "filter", "options": [
-      ""
+      "",
+      "Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)"
     ]},
     {"var": "DV", "options": [
       "LogNumChar",
-      "ThreadsThisYear"
+      "ThreadsThisYear",
+      "MeanWC"
     ]},
     {"var": "IV", "options": [
       "AcademicHierarchyStrict",
@@ -43,12 +45,31 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 df <- df %>%
   mutate(LogNumChar=log(Number.Characters))
 
+# MeanWC: average # words for each contributor in a single conversation
+tmp <- df %>%
+  group_by(ThreadId, Id) %>%
+  summarise(total_wpt = sum(WC)) %>%
+  group_by(Id) %>%
+  summarise(MeanWC = sum(total_wpt)/n())
+
+df <- left_join(df, tmp, by = "Id")
+
+# filtering
+df <- df %>%
+  filter({{filter}})
+
 # todo: exclude all NAs as in A5?
 
 # hack
-tmp = '{{random_term}} {{filter}}'
+tmp = '{{random_term}}'
 
 # --- (Unit) comment
+
+# --- (Unit) author
+df <- df %>%
+  group_by(Id) %>%
+  slice(1) %>%
+  ungroup()
 
 # --- (Model) lm
 model <- lm({{DV}} ~ {{IV}} {{covariates}}, data=df)
