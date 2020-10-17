@@ -3,114 +3,42 @@
 
 # data import -------------------------------------------------------------
 library(tidyverse)
-library(magrittr)
 library(tidytext)
-library(forcats)
 
-edge <- read_csv("../data/edge1.1_anonymized.csv")
+df <- read_csv("../data/edge1.1_anonymized.csv")
 
-# create a person level data frame
-# but, ensure that no two-author pieces are slipping in
-# these are really rare, and they seem substantively different from posts by
-# individuals
-persons <- edge %>% 
-  filter(
-    TwoAuthors != 1,
-    !is.na(Male)
-  ) %>% 
-  select(
-    ThreadId,
-    Id_num,
-    Academic,
-    Male,
-    Discipline,
-    PreviousCitations,
-    H_Index,
-    AcademicHierarchyStrict,
-    Workplace_US_Bin,
-    Text
-  ) %>% 
-  distinct
+tmp = df %>%
+  distinct(Id_num,Academic,Discipline,AcademicHierarchyStrict,USA_Ranking_Dif, .keep_all=TRUE) %>%
+  mutate(
+    CustomDiscipline = ifelse(is.na(Discipline), "missing", Discipline)
+  )
 
 # this gets us an observation for each word-- super large data frame
-p_words <- persons %>% 
+df <- df %>% 
+  filter(TwoAuthors != 1) %>% 
+  select(ThreadId, Id_num, Text) %>% 
+  distinct %>% 
   group_by(Id_num, ThreadId) %>% 
   mutate(comment_num = row_number()) %>% 
   ungroup %>% 
-  unnest_tokens(word, Text)
-
-num_words <- count(p_words, Id_num, ThreadId, comment_num)
-
-num_words_analytic <- num_words %>%
+  unnest_tokens(word, Text) %>%
+  count(Id_num, ThreadId, comment_num) %>%
   group_by(Id_num) %>%
-  summarize(
-    med_words  = median(n),
-    mean_words = mean(n),
-    sd_words   = sd(n)
-  ) %>%
-  left_join(
-    edge %>%
-      select(
-        Id_num,
-        Academic,
-        Male,
-        Discipline,
-        AcademicHierarchyStrict,
-        Discipline,
-        USA_Ranking_Dif,
-        Total_Citations
-      ) %>%
-      distinct %>%
-      mutate(
-        disc = ifelse(is.na(Discipline), "missing", Discipline),
-        disc = factor(disc) %>% relevel(ref = "Social Sciences")
-      ),
-    by = c("Id_num")
+  summarize(mean_words = mean(n))
+
+df = left_join(df, tmp, by = c("Id_num"))
+
+# 5 is "Professor", 6 is "Chaired Prof", 7 is NA
+# 1 to 4 are: "Graduate Student", "Postdoc", "Asst. Prof", and "Assoc. Prof"
+df = df %>%
+  mutate(
+    CustomHierarchy = AcademicHierarchyStrict %>%ifelse(is.na(.), 7, .),
+    CustomHierarchy = factor(CustomHierarchy, levels=c(5, 7, 1:4, 6))
   )
 
-num_words_analytic <- left_join(
-  num_words_analytic,
-  edge %>%
-    select(Id_num, H_Index, i10_Index) %>%
-    distinct,
-  by = "Id_num"
-)
+df = df %>%
+  filter(mean_words <= 3000)
 
-num_words_analytic$AcademicHierarchyStrict <- factor(
-  num_words_analytic$AcademicHierarchyStrict,
-  levels = c(5, 1:4, 6),
-  labels = c("Professor", "Graduate Student", "Postdoc", "Asst. Prof",
-             "Assoc. Prof", "Chaired Prof")
-)
-
-num_words_analytic$Male <- factor(
-  num_words_analytic$Male,
-  levels = 0:1,
-  labels = c("Female", "Male")
-)
-
-num_words_analytic$Academic <- factor(
-  num_words_analytic$Academic,
-  levels = 0:1,
-  labels = c("non-academic", "academic")
-)
-
-num_words_mod4b <- lm(
-  mean_words ~
-    disc +
-    Male +
-    AcademicHierarchyStrict,
-  data = num_words_analytic %>%
-    filter(mean_words <= 3000) %>%
-    mutate(
-      AcademicHierarchyStrict =
-        as.character(AcademicHierarchyStrict) %>%
-        ifelse(is.na(.), "na", .) %>% 
-        factor(levels = c(
-          "Professor", "na", "Graduate Student", "Postdoc", "Asst. Prof",
-          "Assoc. Prof", "Chaired Prof"
-        ))
-    )
-)
-
+num_words_mod4b <- lm(mean_words ~ CustomDiscipline + Male + CustomHierarchy,
+  data = df)
 summary(num_words_mod4b) 
