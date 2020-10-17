@@ -27,7 +27,13 @@
     ]}
   ],
   "constraints": [
-    {"link": ["IV", "IV_alias"]}
+    {"link": ["IV", "IV_alias"]},
+    {"variable": "DV", "option": "LogNumChar",
+      "condition": "Unit == comment"},
+    {"variable": "DV", "option": "ThreadsThisYear",
+      "condition": "Unit == comment"},
+    {"variable": "DV", "option": "MeanWC",
+      "condition": "Unit == author"}
   ],
   "before_execute": "rm -rf results && mkdir results",
   "after_execute": "cp ../after_execute.sh ./ && sh after_execute.sh"
