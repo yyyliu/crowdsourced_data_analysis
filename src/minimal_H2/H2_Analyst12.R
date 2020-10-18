@@ -7,6 +7,15 @@ library(tidytext)
 
 df <- read_csv("../data/edge1.1_anonymized.csv")
 
+# 5 is "Professor", 6 is "Chaired Prof", 7 is NA
+# 1 to 4 are: "Graduate Student", "Postdoc", "Asst. Prof", and "Assoc. Prof"
+df = df %>%
+  mutate(
+    CustomHierarchy = AcademicHierarchyStrict %>%ifelse(is.na(.), 7, .),
+    CustomHierarchy = factor(CustomHierarchy, levels=c(5, 7, 1:4, 6))
+  )
+
+# custom discpline
 tmp = df %>%
   distinct(Id_num,Academic,Discipline,AcademicHierarchyStrict,USA_Ranking_Dif, .keep_all=TRUE) %>%
   mutate(
@@ -27,14 +36,6 @@ df <- df %>%
   summarize(mean_words = mean(n))
 
 df = left_join(df, tmp, by = c("Id_num"))
-
-# 5 is "Professor", 6 is "Chaired Prof", 7 is NA
-# 1 to 4 are: "Graduate Student", "Postdoc", "Asst. Prof", and "Assoc. Prof"
-df = df %>%
-  mutate(
-    CustomHierarchy = AcademicHierarchyStrict %>%ifelse(is.na(.), 7, .),
-    CustomHierarchy = factor(CustomHierarchy, levels=c(5, 7, 1:4, 6))
-  )
 
 df = df %>%
   filter(mean_words <= 3000)

@@ -15,7 +15,8 @@
       "AcademicHierarchyStrict",
       "Job_Title_S",
       "LogCitations",
-      "PhdRanking"
+      "PhdRanking",
+      "CustomHierarchy"
     ]},
     {"var": "random_term", "options": [
       ""
@@ -23,13 +24,15 @@
     {"var": "covariates", "options": [
       "",
       "+ Female + Academic",
-      "+ AcademicHierarchyStrict + Discipline"
+      "+ AcademicHierarchyStrict + Discipline",
+      "+ CustomDiscipline + Male"
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
       "Job_Title_SChaired Professor",
       "LogCitations",
-      "PhdRanking"
+      "PhdRanking",
+      "CustomHierarchy6"
     ]}
   ],
   "constraints": [
@@ -39,9 +42,13 @@
     {"variable": "DV", "option": "ThreadsThisYear",
       "condition": "Unit == comment"},
     {"variable": "DV", "option": "MeanWC",
-      "condition": "Unit == author"},
+      "condition": "Unit == author or Unit == custom_A12"},
     {"variable": "IV", "option": "PhdRanking",
-      "condition": "Unit == author"}
+      "condition": "Unit == author"},
+    {"variable": "IV", "option": "CustomHierarchy",
+      "condition": "Unit == custom_A12"},
+    {"variable": "covariates", "index": 3,
+      "condition": "Unit == custom_A12"}
   ],
   "before_execute": "rm -rf results && mkdir results",
   "after_execute": "cp ../after_execute.sh ./ && sh after_execute.sh"
@@ -49,15 +56,17 @@
 # --- (END)
 
 library(readr)
+library(tidytext)
 library(tidyverse)
 library(broom.mixed)
 source('../../../boba_util.R')
 
-df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
+df <- read.csv(file='../../../data/edge1.1_anonymized.csv', stringsAsFactors = FALSE)
 
 # LogNumChar: the natural log of Number.Characters
 # LogCitations: the natural log of Citations_Cumulative
 # PhdRanking: combined ranking of whether they have PhD and the rank of their academic workplace
+# CustomHierarchy: a reordered, factorized version of AcademicHierarchyStrict, by A12
 df <- df %>%
   mutate(
     LogNumChar=log(Number.Characters),
@@ -66,7 +75,9 @@ df <- df %>%
       Workplace_SR_Bin, "no_rank"), "no_phd"),
     PhdRanking = forcats::fct_relevel(PhdRanking, "no_phd", "no_rank", 
       "7", "6", "5", "4", "3", "2", "1"),
-    PhdRanking = as.numeric(PhdRanking)
+    PhdRanking = as.numeric(PhdRanking),
+    CustomHierarchy = AcademicHierarchyStrict %>%ifelse(is.na(.), 7, .),
+    CustomHierarchy = factor(CustomHierarchy, levels=c(5, 7, 1:4, 6))
   )
 
 # MeanWC: average # words for each contributor in a single conversation
@@ -98,6 +109,32 @@ df <- df %>%
   ) %>%
   slice(1) %>%
   ungroup()
+
+# --- (Unit) custom_A12
+tmp = df %>%
+  distinct(Id_num,Academic,Discipline,AcademicHierarchyStrict,USA_Ranking_Dif, .keep_all=TRUE) %>%
+  mutate(
+    CustomDiscipline = ifelse(is.na(Discipline), "missing", Discipline)
+  ) %>%
+  select(-MeanWC)
+
+persons <- df %>% 
+  filter(TwoAuthors != 1) %>% 
+  select(ThreadId, Id_num, Text) %>% 
+  distinct %>% 
+  group_by(Id_num, ThreadId) %>% 
+  mutate(comment_num = row_number()) %>% 
+  ungroup %>% 
+  unnest_tokens(word, Text) %>%
+  count(Id_num, ThreadId, comment_num) %>%
+  group_by(Id_num) %>%
+  summarize(MeanWC = mean(n))
+
+df = left_join(persons, tmp, by=c("Id_num"))
+
+# though this is a filter, the variable is only available here
+df = df %>%
+  filter(MeanWC <= 3000)
 
 # --- (Model) lm
 model <- lm({{DV}} ~ {{IV}} {{covariates}}, data=df)

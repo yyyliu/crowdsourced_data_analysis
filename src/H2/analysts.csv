@@ -7,7 +7,7 @@ A7,,LogNumChar,LogCitations,comment,lm,+ AcademicHierarchyStrict + Discipline,,-
 A9,,WC,PhdRanking,author,lm,,,5.62473,9.29e-09,69.70
 A10,,1.36e-05,0.12150
 A11,,0.1960,0.09032
-A12,,0.28738,54.39
+A12,,MeanWC,CustomHierarchy,custom_A12,lm,+ CustomDiscipline + Male,,0.56106,0.28738,54.39
 A14,,0.719, 0.03351
 A17,-4.3936,1.115e-05,-0.05278
 A18,,0.3687,0.08902
