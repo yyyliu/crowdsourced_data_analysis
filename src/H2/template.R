@@ -13,6 +13,7 @@
       "MeanWC",
       "WC",
       "ScaledWC",
+      "LogWC",
       "NumCharacters"
     ]},
     {"var": "IV", "options": [
@@ -21,10 +22,12 @@
       "LogCitations",
       "PhdRanking",
       "CustomHierarchy",
-      "ScaledTotalCitations"
+      "ScaledTotalCitations",
+      "Status"
     ]},
     {"var": "random_term", "options": [
-      "+ (1 | Id_num) + (1 + ScaledTotalCitations | ThreadId)"
+      "+ (1 | Id_num) + (1 + ScaledTotalCitations | ThreadId)",
+      "+ (1 | ThreadId) + (1 | Id)"
     ]},
     {"var": "covariates", "options": [
       "",
@@ -32,7 +35,8 @@
       "+ AcademicHierarchyStrict + Discipline",
       "+ CustomDiscipline + Male",
       "+ Female",
-      "+ 1 + WorkplaceMeanRank + OrderedAcademicHierarchy"
+      "+ 1 + WorkplaceMeanRank + OrderedAcademicHierarchy",
+      "+ Role + Female + Type"
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
@@ -40,7 +44,8 @@
       "LogCitations",
       "PhdRanking",
       "CustomHierarchy6",
-      "ScaledTotalCitations"
+      "ScaledTotalCitations",
+      "Status"
     ]}
   ],
   "constraints": [
@@ -57,6 +62,8 @@
       "condition": "Unit == comment or Unit == author"},
     {"variable": "DV", "option": "ScaledWC",
       "condition": "Unit == comment"},
+    {"variable": "DV", "option": "LogWC",
+      "condition": "Unit == comment"},
     {"variable": "DV", "option": "NumCharacters",
       "condition": "Unit == comment or Unit == custom_A23"},
     {"variable": "IV", "option": "PhdRanking",
@@ -67,6 +74,7 @@
       "condition": "Unit == custom_A12"},
     {"variable": "random_term", "index": 0,
       "condition": "IV == ScaledTotalCitations"},
+    {"block": "A", "condition": "IV == Status", "skippable": true},
     {"block": "Unit", "option": "custom_A23",
       "condition": "IV == AcademicHierarchyStrict and DV == NumCharacters"}
   ],
@@ -89,7 +97,10 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv', stringsAsFactors = F
 # PhdRanking: combined ranking of whether they have PhD and the rank of their academic workplace
 # CustomHierarchy: a reordered, factorized version of AcademicHierarchyStrict, by A12
 # WorkplaceMeanRank: mean workplace rank
-# 
+# ScaledTotalCitations: Total_Citations divided by 1000
+# ScaledWC: word count divided by 100
+# LogWC: the natural log of word count
+# OrderedAcademicHierarchy: AcademicHierarchyStrict as an ordered factor
 df <- df %>%
   mutate(
     NumCharacters = Number.Characters,
@@ -106,6 +117,7 @@ df <- df %>%
     WorkplaceMeanRank = ordered(WorkplaceMeanRank),
     ScaledTotalCitations = Total_Citations / 1000,
     ScaledWC = WC / 100,
+    LogWC = log(WC),
     OrderedAcademicHierarchy = ordered(AcademicHierarchyStrict)
   )
 
@@ -126,6 +138,55 @@ df <- df %>%
 
 # hack
 tmp = '{{IV}} {{DV}}'
+
+# --- (A)
+# All this mess is for creating the custom variable Status, used in A10
+z. <- function(X){
+  (X - mean(X, na.rm=T))/sd(X, na.rm=T)
+}
+ind <- df$Id
+
+phd <- df$HavePhD
+phd[is.na(phd)] <- 0 # Assumes no info equals no PhD
+phd <- tapply(phd, ind, mean)
+
+academic <- as.numeric(df$Academic)
+academic[is.na(academic)] <- 0 # Assumes no info equals not academic
+academic <- tapply(academic, ind, mean)
+
+phdBin <- df$PhD_Institution_US_IR_Bin
+phdBin[is.na(phdBin)] <- 0
+phdBin <- tapply(phdBin, ind, mean)
+phdBin <- z.(phdBin)
+
+workBin <- df$Workplace_US_IR_Bin
+workBin[is.na(workBin)] <- 0
+workBin <- tapply(workBin, ind, mean)
+workBin <- z.(workBin)
+
+threadPart <- tapply(df$ThreadId, df$Id_num, function(x) length(unique(x))) # How many threads in total?
+threadPart <- z.(threadPart)
+
+# Citation indexes correlates highly with total citations
+citation <- df$Total_Citations
+citation[is.na(citation)] <- 0 # Assumes no info equals no citations
+citation <- tapply(citation, ind, mean)
+citation <- z.(citation)
+
+acadHier <- df$AcademicHierarchyStrict
+acadHier[is.na(acadHier)] <-0 # Again
+acadHier <- tapply(acadHier, ind, mean)
+acadHier <- z.(acadHier)
+
+statusVar <- data.frame(phd, academic, phdBin, workBin, threadPart, citation, acadHier)
+
+# 'loadings' weights come from factor analysis
+loadings <- as.numeric(factanal(statusVar, factors=1)$loadings)
+status <- apply(statusVar, 1, function(x) sum(x * loadings)/length(loadings))
+status <- status[as.numeric(factor(df$Id))]
+status <- z.(status)
+
+df <- df %>% add_column(Status = status)
 
 # --- (Unit) comment
 

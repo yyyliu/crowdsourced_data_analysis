@@ -5,7 +5,7 @@ A5,,ThreadsThisYear,Job_Title_S,comment,lm,,,7.35664,9.43e-14,3.8810
 A6,"Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)",MeanWC,AcademicHierarchyStrict,author,lm,,,-0.071532,0.52851,-64.38
 A7,,LogNumChar,LogCitations,comment,lm,+ AcademicHierarchyStrict + Discipline,,-3.88674,5.08e-05,-0.22119
 A9,,WC,PhdRanking,author,lm,,,5.62473,9.29e-09,69.70
-A10,,1.36e-05,0.12150
+A10,,LogWC,Status,comment,lmer,+ Role + Female + Type,+ (1 | ThreadId) + (1 | Id),4.19573,1.36e-05,0.12150
 A11,,0.1960,0.09032
 A12,,MeanWC,CustomHierarchy,custom_A12,lm,+ CustomDiscipline + Male,,0.56106,0.28738,54.39
 A14,,0.719, 0.03351

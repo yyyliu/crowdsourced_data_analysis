@@ -1,8 +1,7 @@
 # For the complete code transcription, please check this link:
 # https://docs.google.com/document/d/1waNsZLM-VL9b14rrsVLrNxeXSoboo-KaHgmsKp0NSqY/edit
 
-library(dplyr)
-library(psych)
+library(tidyverse)
 library(lme4)
 edge <- read.csv("../data/edge1.1_anonymized.csv")
 
@@ -53,11 +52,10 @@ statusVar <- data.frame(phd, academic, phdBin, workBin, threadPart, citation, ac
 loadings <- as.numeric(factanal(statusVar, factors=1)$loadings)
 status <- apply(statusVar, 1, function(x) sum(x * loadings)/length(loadings))
 status <- status[as.numeric(factor(edge$Id))]
+status <- z.(status)
 
-hyp2df <- data.frame(Id=edge$Id, ThreadId=edge$ThreadId,
-                     Role=edge$Role, Female=edge$Female,
-                     WC=edge$WC, Type=edge$Type, status)
+hyp2df = edge %>% add_column(status = status)
 
 # Use standardized status for easier interpratation
-M1 <- (lmer(log(WC)~factor(Role) + factor(Female) + factor(Type) + z.(status) + (1|ThreadId) + (1|Id), data=hyp2df))
+M1 <- (lmer(log(WC)~Role + Female + Type + status + (1|ThreadId) + (1|Id), data=hyp2df))
 summary(M1) 
