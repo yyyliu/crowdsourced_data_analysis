@@ -185,6 +185,7 @@ df <- df %>%
 
 # --- (Unit) author
 df <- df %>%
+  group_by(ThreadId, Id) %>%
   mutate(
     WC = mean(WC)
   ) %>%
