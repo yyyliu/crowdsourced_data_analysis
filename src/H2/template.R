@@ -4,13 +4,15 @@
     {"var": "filter", "options": [
       "",
       "Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)",
-      "Role == 2"
+      "Role == 2",
+      "DebateSize > 1"
     ]},
     {"var": "DV", "options": [
       "LogNumChar",
       "ThreadsThisYear",
       "MeanWC",
       "WC",
+      "ScaledWC",
       "NumCharacters"
     ]},
     {"var": "IV", "options": [
@@ -18,24 +20,27 @@
       "Job_Title_S",
       "LogCitations",
       "PhdRanking",
-      "CustomHierarchy"
+      "CustomHierarchy",
+      "ScaledTotalCitations"
     ]},
     {"var": "random_term", "options": [
-      ""
+      "+ (1 | Id_num) + (1 + ScaledTotalCitations | ThreadId)"
     ]},
     {"var": "covariates", "options": [
       "",
       "+ Female + Academic",
       "+ AcademicHierarchyStrict + Discipline",
       "+ CustomDiscipline + Male",
-      "+ Female"
+      "+ Female",
+      "+ 1 + WorkplaceMeanRank + OrderedAcademicHierarchy"
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
       "Job_Title_SChaired Professor",
       "LogCitations",
       "PhdRanking",
-      "CustomHierarchy6"
+      "CustomHierarchy6",
+      "ScaledTotalCitations"
     ]}
   ],
   "constraints": [
@@ -54,6 +59,8 @@
       "condition": "Unit == custom_A12"},
     {"variable": "covariates", "index": 3,
       "condition": "Unit == custom_A12"},
+    {"variable": "random_term", "index": 0,
+      "condition": "IV == ScaledTotalCitations"},
     {"block": "Unit", "option": "custom_A23",
       "condition": "IV == AcademicHierarchyStrict and DV == NumCharacters"}
   ],
@@ -63,6 +70,7 @@
 # --- (END)
 
 library(readr)
+library(lmerTest)
 library(tidytext)
 library(tidyverse)
 library(broom.mixed)
@@ -74,6 +82,8 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv', stringsAsFactors = F
 # LogCitations: the natural log of Citations_Cumulative
 # PhdRanking: combined ranking of whether they have PhD and the rank of their academic workplace
 # CustomHierarchy: a reordered, factorized version of AcademicHierarchyStrict, by A12
+# WorkplaceMeanRank: mean workplace rank
+# 
 df <- df %>%
   mutate(
     NumCharacters = Number.Characters,
@@ -85,7 +95,12 @@ df <- df %>%
       "7", "6", "5", "4", "3", "2", "1"),
     PhdRanking = as.numeric(PhdRanking),
     CustomHierarchy = AcademicHierarchyStrict %>%ifelse(is.na(.), 7, .),
-    CustomHierarchy = factor(CustomHierarchy, levels=c(5, 7, 1:4, 6))
+    CustomHierarchy = factor(CustomHierarchy, levels=c(5, 7, 1:4, 6)),
+    WorkplaceMeanRank = rowMeans(.[,c("Workplace_SR_Bin", "Workplace_US_IR_Bin")], na.rm = TRUE),
+    WorkplaceMeanRank = ordered(WorkplaceMeanRank),
+    ScaledTotalCitations = Total_Citations / 1000,
+    ScaledWC = WC / 100,
+    OrderedAcademicHierarchy = ordered(AcademicHierarchyStrict)
   )
 
 # MeanWC: average # words for each contributor in a single conversation
@@ -104,7 +119,7 @@ df <- df %>%
 # todo: exclude all NAs as in A5?
 
 # hack
-tmp = '{{random_term}} {{IV}} {{DV}}'
+tmp = '{{IV}} {{DV}}'
 
 # --- (Unit) comment
 
@@ -154,6 +169,23 @@ df <- df %>%
 
 # --- (Model) lm
 model <- lm({{DV}} ~ {{IV}} {{covariates}}, data=df)
+summary(model)
+
+# compute z score
+result <- tidy(model, conf.int = TRUE) %>%
+  filter(term == '{{IV_alias}}') %>%
+  mutate(
+    # they seem to calculate p value from t distribution when the model summary
+    # do not report the exact p-value, usually because it's very small
+    p = pt(statistic, df.residual(model), lower.tail=FALSE),
+    p = ifelse(p.value > 1e-14, p.value, p),
+    z = qnorm(p),
+    # make z the same sign as the estimate
+    z = ifelse(sign(z)==sign(estimate), z, -z)
+  )
+
+# --- (Model) lmer
+model <- lmer({{DV}} ~ {{IV}} {{covariates}} {{random_term}}, data=df)
 summary(model)
 
 # compute z score

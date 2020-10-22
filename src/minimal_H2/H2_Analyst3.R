@@ -3,8 +3,6 @@
 
 #'####Required R libraries
 require(lme4)
-require(piecewiseSEM)
-require(influence.ME)
 
 #'####Reading in the data
 data <- read.csv("../data/edge1.1_anonymized.csv")
@@ -17,13 +15,14 @@ data$Total_Citations <- data$Total_Citations/1000
 data$WC <- data$WC/100
 
 #'###Defining measurement levels
-data$Id_num <- as.factor(data$Id_num)
-data$ThreadId <- as.factor(data$ThreadId)
 data$WorkplaceMeanRank <- ordered(data$WorkplaceMeanRank)
 data$AcademicHierarchyStrict <- ordered(data$AcademicHierarchyStrict)
 
 #'Handling missing values by listwise deletion + filtering out non-conversations (single-authored threads)
-data.na.rm = data[!is.na(data$AcademicHierarchyStrict) & !is.na(data$WorkplaceMeanRank) & !is.na(data$Total_Citations) & data$DebateSize > 1,]
+# data.na.rm = data[!is.na(data$AcademicHierarchyStrict) & !is.na(data$WorkplaceMeanRank) & !is.na(data$Total_Citations) & data$DebateSize > 1,]
+
+# it does not matter to drop NA because lmer will drop them anyways
+data.na.rm = data[data$DebateSize > 1,]
 
 #'Adding random slope for Total Citations. Effect of Total Citations on Word Count now allowed to vary accross threads
 H2lmm4 <- lmer(WC ~ 1 + WorkplaceMeanRank + AcademicHierarchyStrict + Total_Citations + (1 | Id_num) + (1 + Total_Citations | ThreadId), data.na.rm, REML = TRUE)
