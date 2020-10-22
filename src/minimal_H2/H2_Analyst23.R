@@ -14,12 +14,9 @@ dat2 <- dat %>%
 
 # Don't take the mean of AcademicHierarchy 
 dat_sum <- dat2 %>% 
-  mutate(AllContributions = PreviousContributions + ContributionsThisYear) %>% 
   group_by(Id, AcademicHierarchyStrict, Female) %>% 
   # Academic Status might change, so taking the mean. This is not ideal though.
-  summarise(
-            comment_length = mean(Number.Characters),
-            number_comments = mean(AllContributions))
+  summarise(comment_length = mean(Number.Characters))
 
 # we want academic hierarchy as a predictor.
 # code ordinal variable as numeric, as Andrew Gelman suggests here: http://andrewgelman.com/2009/10/06/coding_ordinal/

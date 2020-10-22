@@ -3,13 +3,15 @@
   "decisions": [
     {"var": "filter", "options": [
       "",
-      "Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)"
+      "Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)",
+      "Role == 2"
     ]},
     {"var": "DV", "options": [
       "LogNumChar",
       "ThreadsThisYear",
       "MeanWC",
-      "WC"
+      "WC",
+      "NumCharacters"
     ]},
     {"var": "IV", "options": [
       "AcademicHierarchyStrict",
@@ -25,7 +27,8 @@
       "",
       "+ Female + Academic",
       "+ AcademicHierarchyStrict + Discipline",
-      "+ CustomDiscipline + Male"
+      "+ CustomDiscipline + Male",
+      "+ Female"
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
@@ -41,6 +44,8 @@
       "condition": "Unit == comment"},
     {"variable": "DV", "option": "ThreadsThisYear",
       "condition": "Unit == comment"},
+    {"variable": "DV", "option": "NumCharacters",
+      "condition": "Unit == custom_A23"},
     {"variable": "DV", "option": "MeanWC",
       "condition": "Unit == author or Unit == custom_A12"},
     {"variable": "IV", "option": "PhdRanking",
@@ -48,7 +53,9 @@
     {"variable": "IV", "option": "CustomHierarchy",
       "condition": "Unit == custom_A12"},
     {"variable": "covariates", "index": 3,
-      "condition": "Unit == custom_A12"}
+      "condition": "Unit == custom_A12"},
+    {"block": "Unit", "option": "custom_A23",
+      "condition": "IV == AcademicHierarchyStrict and DV == NumCharacters"}
   ],
   "before_execute": "rm -rf results && mkdir results",
   "after_execute": "cp ../after_execute.sh ./ && sh after_execute.sh"
@@ -69,6 +76,7 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv', stringsAsFactors = F
 # CustomHierarchy: a reordered, factorized version of AcademicHierarchyStrict, by A12
 df <- df %>%
   mutate(
+    NumCharacters = Number.Characters,
     LogNumChar=log(Number.Characters),
     LogCitations = log(Citations_Cumulative),
     PhdRanking = ifelse(HavePhD == 1, ifelse(!is.na(Workplace_SR_Bin), 
@@ -96,7 +104,7 @@ df <- df %>%
 # todo: exclude all NAs as in A5?
 
 # hack
-tmp = '{{random_term}}'
+tmp = '{{random_term}} {{IV}} {{DV}}'
 
 # --- (Unit) comment
 
@@ -135,6 +143,14 @@ df = left_join(persons, tmp, by=c("Id_num"))
 # though this is a filter, the variable is only available here
 df = df %>%
   filter(MeanWC <= 3000)
+
+# --- (Unit) custom_A23
+df <- df %>% 
+  group_by(Id, AcademicHierarchyStrict, Female) %>% 
+  # Academic Status might change, so taking the mean. This is not ideal though.
+  summarise(NumCharacters = mean(NumCharacters)) %>%
+  ungroup %>%
+  mutate(AcademicHierarchyStrict = as.numeric(as.character(AcademicHierarchyStrict)))
 
 # --- (Model) lm
 model <- lm({{DV}} ~ {{IV}} {{covariates}}, data=df)
