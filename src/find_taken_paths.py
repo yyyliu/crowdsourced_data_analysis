@@ -15,12 +15,18 @@ def find_taken_paths (fn='multiverse'):
   fn = os.path.join(fn, 'summary.csv')
   df = pd.read_csv(fn, dtype=str, na_filter=False)
 
+  # add this decision point because it's not in H1
+  if 'Transform' not in df:
+    df['Transform'] = 0
+    taken['Transform'] = 0
+
   found = []
   for idx, row in taken.iterrows():
     res = df.loc[
       (df['Unit'] == row['Unit']) &
       (df['Model'] == row['Model']) &
       (df['filter'] == row['filter']) &
+      (df['Transform'] == row['Transform']) &
       (df['DV'] == row['DV']) &
       (df['IV'] == row['IV']) &
       (df['covariates'] == row['covariates']) &

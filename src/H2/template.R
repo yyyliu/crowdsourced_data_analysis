@@ -8,12 +8,10 @@
       "DebateSize > 1"
     ]},
     {"var": "DV", "options": [
-      "LogNumChar",
       "ThreadsThisYear",
       "MeanWC",
       "WC",
       "ScaledWC",
-      "LogWC",
       "NumCharacters"
     ]},
     {"var": "IV", "options": [
@@ -50,19 +48,15 @@
   ],
   "constraints": [
     {"link": ["IV", "IV_alias"]},
-    {"variable": "DV", "option": "LogNumChar",
-      "condition": "Unit == comment"},
     {"variable": "DV", "option": "ThreadsThisYear",
       "condition": "Unit == comment"},
     {"variable": "DV", "option": "NumCharacters",
-      "condition": "Unit == custom_A23"},
+      "condition": "Unit == comment or Unit == custom_A23"},
     {"variable": "DV", "option": "MeanWC",
       "condition": "Unit == author or Unit == custom_A12"},
     {"variable": "DV", "option": "WC",
       "condition": "Unit == comment or Unit == author"},
     {"variable": "DV", "option": "ScaledWC",
-      "condition": "Unit == comment"},
-    {"variable": "DV", "option": "LogWC",
       "condition": "Unit == comment"},
     {"variable": "DV", "option": "NumCharacters",
       "condition": "Unit == comment or Unit == custom_A23"},
@@ -76,7 +70,9 @@
       "condition": "IV == ScaledTotalCitations"},
     {"block": "A", "condition": "IV == Status", "skippable": true},
     {"block": "Unit", "option": "custom_A23",
-      "condition": "IV == AcademicHierarchyStrict and DV == NumCharacters"}
+      "condition": "IV == AcademicHierarchyStrict and DV == NumCharacters"},
+    {"block": "Transform", "option": "log",
+      "condition": "DV == WC or DV == NumCharacters"}
   ],
   "before_execute": "rm -rf results && mkdir results",
   "after_execute": "cp ../after_execute.sh ./ && sh after_execute.sh"
@@ -92,19 +88,16 @@ source('../../../boba_util.R')
 
 df <- read.csv(file='../../../data/edge1.1_anonymized.csv', stringsAsFactors = FALSE)
 
-# LogNumChar: the natural log of Number.Characters
 # LogCitations: the natural log of Citations_Cumulative
 # PhdRanking: combined ranking of whether they have PhD and the rank of their academic workplace
 # CustomHierarchy: a reordered, factorized version of AcademicHierarchyStrict, by A12
 # WorkplaceMeanRank: mean workplace rank
 # ScaledTotalCitations: Total_Citations divided by 1000
 # ScaledWC: word count divided by 100
-# LogWC: the natural log of word count
 # OrderedAcademicHierarchy: AcademicHierarchyStrict as an ordered factor
 df <- df %>%
   mutate(
     NumCharacters = Number.Characters,
-    LogNumChar=log(Number.Characters),
     LogCitations = log(Citations_Cumulative),
     PhdRanking = ifelse(HavePhD == 1, ifelse(!is.na(Workplace_SR_Bin), 
       Workplace_SR_Bin, "no_rank"), "no_phd"),
@@ -117,7 +110,6 @@ df <- df %>%
     WorkplaceMeanRank = ordered(WorkplaceMeanRank),
     ScaledTotalCitations = Total_Citations / 1000,
     ScaledWC = WC / 100,
-    LogWC = log(WC),
     OrderedAcademicHierarchy = ordered(AcademicHierarchyStrict)
   )
 
@@ -233,6 +225,12 @@ df <- df %>%
   summarise(NumCharacters = mean(NumCharacters)) %>%
   ungroup %>%
   mutate(AcademicHierarchyStrict = as.numeric(as.character(AcademicHierarchyStrict)))
+
+# --- (Transform) none
+
+# --- (Transform) log
+df <- df %>%
+  mutate({{DV}} = log({{DV}}))
 
 # --- (Model) lm
 model <- lm({{DV}} ~ {{IV}} {{covariates}}, data=df)
