@@ -5,14 +5,16 @@
       "",
       "Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)",
       "Role == 2",
-      "DebateSize > 1"
+      "DebateSize > 1",
+      "Academic==1, TotalCommentsById < 100"
     ]},
     {"var": "DV", "options": [
       "ThreadsThisYear",
       "MeanWC",
       "WC",
       "ScaledWC",
-      "NumCharacters"
+      "NumCharacters",
+      "WPS"
     ]},
     {"var": "IV", "options": [
       "AcademicHierarchyStrict",
@@ -21,11 +23,13 @@
       "PhdRanking",
       "CustomHierarchy",
       "ScaledTotalCitations",
-      "Status"
+      "Status",
+      "H_Index"
     ]},
     {"var": "random_term", "options": [
       "+ (1 | Id_num) + (1 + ScaledTotalCitations | ThreadId)",
-      "+ (1 | ThreadId) + (1 | Id)"
+      "+ (1 | ThreadId) + (1 | Id)",
+      "+ (1 | Live)"
     ]},
     {"var": "covariates", "options": [
       "",
@@ -34,7 +38,8 @@
       "+ CustomDiscipline + Male",
       "+ Female",
       "+ 1 + WorkplaceMeanRank + OrderedAcademicHierarchy",
-      "+ Role + Female + Type"
+      "+ Role + Female + Type",
+      "+ Female + Years_from_PhD + LogTotalCitations + AcademicHierarchyStrict"
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
@@ -43,7 +48,8 @@
       "PhdRanking",
       "CustomHierarchy6",
       "ScaledTotalCitations",
-      "Status"
+      "Status",
+      "H_Index"
     ]}
   ],
   "constraints": [
@@ -58,6 +64,8 @@
       "condition": "Unit == comment or Unit == author"},
     {"variable": "DV", "option": "ScaledWC",
       "condition": "Unit == comment"},
+    {"variable": "DV", "option": "WPS",
+      "condition": "Unit == comment and IV == H_Index"},
     {"variable": "DV", "option": "NumCharacters",
       "condition": "Unit == comment or Unit == custom_A23"},
     {"variable": "IV", "option": "PhdRanking",
@@ -88,7 +96,8 @@ source('../../../boba_util.R')
 
 df <- read.csv(file='../../../data/edge1.1_anonymized.csv', stringsAsFactors = FALSE)
 
-# LogCitations: the natural log of Citations_Cumulative
+# LogCitations: the natural log of Citations_Cumulative, used as an IV
+# LogTotalCitations: the natural log of Total_Citations, used as a covariate
 # PhdRanking: combined ranking of whether they have PhD and the rank of their academic workplace
 # CustomHierarchy: a reordered, factorized version of AcademicHierarchyStrict, by A12
 # WorkplaceMeanRank: mean workplace rank
@@ -99,6 +108,7 @@ df <- df %>%
   mutate(
     NumCharacters = Number.Characters,
     LogCitations = log(Citations_Cumulative),
+    LogTotalCitations = log(Total_Citations),
     PhdRanking = ifelse(HavePhD == 1, ifelse(!is.na(Workplace_SR_Bin), 
       Workplace_SR_Bin, "no_rank"), "no_phd"),
     PhdRanking = forcats::fct_relevel(PhdRanking, "no_phd", "no_rank", 
@@ -119,6 +129,13 @@ tmp <- df %>%
   summarise(total_wpt = sum(WC)) %>%
   group_by(Id) %>%
   summarise(MeanWC = sum(total_wpt)/n())
+
+df <- left_join(df, tmp, by = "Id")
+
+# TotalCommentsById: total comments for each id
+tmp <- df %>%
+  group_by(Id) %>%
+  summarise(TotalCommentsById = n())
 
 df <- left_join(df, tmp, by = "Id")
 

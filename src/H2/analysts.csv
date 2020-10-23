@@ -6,7 +6,7 @@ A6,none,"Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)"
 A7,log,,NumCharacters,LogCitations,comment,lm,+ AcademicHierarchyStrict + Discipline,,-3.88674,5.08e-05,-0.22119
 A9,none,,WC,PhdRanking,author,lm,,,5.62473,9.29e-09,69.70
 A10,log,,WC,Status,comment,lmer,+ Role + Female + Type,+ (1 | ThreadId) + (1 | Id),4.19573,1.36e-05,0.12150
-A11,none,,0.1960,0.09032
+A11,none,"Academic==1, TotalCommentsById < 100",WPS,H_Index,comment,lmer,+ Female + Years_from_PhD + LogTotalCitations + AcademicHierarchyStrict,+ (1 | Live),0.85615,0.19596,0.02247
 A12,none,,MeanWC,CustomHierarchy,custom_A12,lm,+ CustomDiscipline + Male,,0.56106,0.28738,54.39
 A14,none,,0.719, 0.03351
 A17,none,-4.3936,1.115e-05,-0.05278
