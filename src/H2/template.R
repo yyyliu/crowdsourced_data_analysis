@@ -24,7 +24,8 @@
       "CustomHierarchy",
       "ScaledTotalCitations",
       "Status",
-      "H_Index"
+      "H_Index",
+      "Workplace_US_Bin"
     ]},
     {"var": "random_term", "options": [
       "+ (1 | Id_num) + (1 + ScaledTotalCitations | ThreadId)",
@@ -39,7 +40,8 @@
       "+ Female",
       "+ 1 + WorkplaceMeanRank + OrderedAcademicHierarchy",
       "+ Role + Female + Type",
-      "+ Female + Years_from_PhD + LogTotalCitations + AcademicHierarchyStrict"
+      "+ Female + Years_from_PhD + LogTotalCitations + AcademicHierarchyStrict",
+      "+ Workplace_SR_Bin + LogTotalCitations"
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
@@ -49,7 +51,8 @@
       "CustomHierarchy6",
       "ScaledTotalCitations",
       "Status",
-      "H_Index"
+      "H_Index",
+      "Workplace_US_Bin"
     ]}
   ],
   "constraints": [
