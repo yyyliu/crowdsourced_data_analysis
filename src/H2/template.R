@@ -14,7 +14,8 @@
       "WC",
       "ScaledWC",
       "NumCharacters",
-      "WPS"
+      "WPS",
+      "SpokePCA"
     ]},
     {"var": "IV", "options": [
       "AcademicHierarchyStrict",
@@ -25,7 +26,8 @@
       "ScaledTotalCitations",
       "Status",
       "H_Index",
-      "Workplace_US_Bin"
+      "Workplace_US_Bin",
+      "StatusPCA"
     ]},
     {"var": "random_term", "options": [
       "+ (1 | Id_num) + (1 + ScaledTotalCitations | ThreadId)",
@@ -41,7 +43,8 @@
       "+ 1 + WorkplaceMeanRank + OrderedAcademicHierarchy",
       "+ Role + Female + Type",
       "+ Female + Years_from_PhD + LogTotalCitations + AcademicHierarchyStrict",
-      "+ Workplace_SR_Bin + LogTotalCitations"
+      "+ Workplace_SR_Bin + LogTotalCitations",
+      "+ Lead + Year + Female + Loc + (Loc):(StatusPCA + Lead + Year + Female)"
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
@@ -52,7 +55,8 @@
       "ScaledTotalCitations",
       "Status",
       "H_Index",
-      "Workplace_US_Bin"
+      "Workplace_US_Bin",
+      "StatusPCA"
     ]}
   ],
   "constraints": [
@@ -71,17 +75,25 @@
       "condition": "Unit == comment and IV == H_Index"},
     {"variable": "DV", "option": "NumCharacters",
       "condition": "Unit == comment or Unit == custom_A23"},
+    {"variable": "DV", "option": "SpokePCA",
+      "condition": "Unit == custom_A18"},
     {"variable": "IV", "option": "PhdRanking",
       "condition": "Unit == author"},
     {"variable": "IV", "option": "CustomHierarchy",
       "condition": "Unit == custom_A12"},
+    {"variable": "IV", "option": "StatusPCA",
+      "condition": "Unit == custom_A18"},
     {"variable": "covariates", "index": 3,
       "condition": "Unit == custom_A12"},
+    {"variable": "covariates", "index": 9,
+      "condition": "Unit == custom_A18 and DV == SpokePCA"},
     {"variable": "random_term", "index": 0,
       "condition": "IV == ScaledTotalCitations"},
     {"block": "A", "condition": "IV == Status", "skippable": true},
     {"block": "Unit", "option": "custom_A23",
       "condition": "IV == AcademicHierarchyStrict and DV == NumCharacters"},
+    {"block": "Unit", "option": "custom_A18",
+      "condition": "DV == SpokePCA and IV == StatusPCA"},
     {"block": "Transform", "option": "log",
       "condition": "DV == WC or DV == NumCharacters"}
   ],
@@ -237,6 +249,65 @@ df = left_join(persons, tmp, by=c("Id_num"))
 # though this is a filter, the variable is only available here
 df = df %>%
   filter(MeanWC <= 3000)
+
+# --- (Unit) custom_A18
+wrangle <- function (df) {
+  tmp <- df %>%
+    group_by(ThreadId) %>%
+    mutate(
+      debate_size = n(),
+      tota_chars = sum(Number.Characters),
+      unique_ids = n_distinct(Id),
+      row_id = row_number()
+    ) %>%
+    ungroup %>%
+    group_by(Id, ThreadId) %>%
+    mutate(
+      Lead = if_else(min(Order) == 1, 1, 0),
+      FracTimesSpoke = n() / debate_size,
+      FracCharSpoke = sum(Number.Characters) / tota_chars,
+      UniqueContributors = unique_ids,
+      DebateSize = debate_size
+    ) %>%
+    arrange(row_id) %>%
+    slice(1) %>%
+    ungroup %>%
+    select(Id,ThreadId,Lead,FracTimesSpoke,FracCharSpoke,Year,UniqueContributors,
+          DebateSize,Female,Academic,HavePhD,PhD_Year,PhD_Institution_SR_Bin,Workplace_SR_Bin,
+          PhD_Institution_US_IR_Bin,Workplace_US_IR_Bin,Total_Citations,H_Index,i10_Index,AcademicHierarchyStrict,
+          PreviousCitations,Limited_Information) %>%
+    filter(Limited_Information==0, FracTimesSpoke < 1, !is.na(Female))
+
+  tmp[tmp == 'Not Available'] <- NA
+
+  tmp <- tmp %>%
+    mutate_all(as.numeric) %>%
+    filter(Academic == 1, !is.na(PhD_Year), !is.na(AcademicHierarchyStrict)) %>%
+    mutate_all(as.numeric)
+
+  scaled<-apply( X =tmp[,4:22],FUN = scale, center = TRUE, scale = TRUE ,MARGIN = 2)
+  tmp[,4:22]<-scaled
+
+  tmp <- tmp %>%
+    mutate(
+      SpokePCA = prcomp(x=cbind(tmp$FracCharSpoke, tmp$FracTimesSpoke), retx=T, center=T, scale.=T)$x[,1],
+      StatusPCA = prcomp(x=cbind(tmp$PhD_Year, tmp$AcademicHierarchyStrict), retx=T, center=T, scale.=T)$x[,1]
+    )
+
+  return(tmp)
+}
+
+Academics_IRL = df %>%
+  filter(Type == 2, Live == 1, UniqueContributors > 1) %>%
+  wrangle %>%
+  mutate(Loc = 1)
+
+Academics_Online <- df %>%
+  filter(Type == 2, Live == 0, UniqueContributors > 1) %>%
+  wrangle%>%
+  mutate(Loc = 2)
+
+df<-rbind(Academics_IRL, Academics_Online)
 
 # --- (Unit) custom_A23
 df <- df %>% 

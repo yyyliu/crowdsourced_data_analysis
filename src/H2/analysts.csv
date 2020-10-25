@@ -10,7 +10,7 @@ A11,none,"Academic==1, TotalCommentsById < 100",WPS,H_Index,comment,lmer,+ Femal
 A12,none,,MeanWC,CustomHierarchy,custom_A12,lm,+ CustomDiscipline + Male,,0.56106,0.28738,54.39
 A14,log,,NumCharacters,Workplace_US_Bin,comment,lmer,+ Workplace_SR_Bin + LogTotalCitations,+ (1 | ThreadId) + (1 | Id),-0.57987,0.719, 0.03351
 A17,none,-4.3936,1.115e-05,-0.05278
-A18,none,,0.3687,0.08902
+A18,none,,SpokePCA,StatusPCA,custom_A18,lmer,+ Lead + Year + Female + Loc + (Loc):(StatusPCA + Lead + Year + Female),+ (1 | ThreadId) + (1 | Id),0.335361,0.3687,0.08902
 A21,none,,0.2421,0.01899725
 A22,none,,0.582,-0.03740264
 A23,none,Role == 2,NumCharacters,AcademicHierarchyStrict,custom_A23,lm,+ Female,,-1.09963,.13574,-239.01
