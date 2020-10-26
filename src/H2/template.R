@@ -14,12 +14,14 @@
       "MeanWC",
       "WC",
       "ScaledWC",
+      "CustomWC",
       "NumCharacters",
       "WPS",
       "SpokePCA"
     ]},
     {"var": "IV", "options": [
       "AcademicHierarchyStrict",
+      "OrderedAcademicHierarchy",
       "Job_Title_S",
       "LogCitations",
       "PhdRanking",
@@ -49,6 +51,7 @@
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
+      "OrderedAcademicHierarchy",
       "Job_Title_SChaired Professor",
       "LogCitations",
       "PhdRanking",
@@ -91,6 +94,7 @@
     {"variable": "random_term", "index": 0,
       "condition": "IV == ScaledTotalCitations"},
     {"block": "A", "condition": "IV == Status", "skippable": true},
+    {"block": "B", "condition": "DV == CustomWC", "skippable": true},
     {"block": "Unit", "option": "custom_A23",
       "condition": "IV == AcademicHierarchyStrict and DV == NumCharacters"},
     {"block": "Unit", "option": "custom_A18",
@@ -103,11 +107,11 @@
 }
 # --- (END)
 
-library(readr)
-library(lmerTest)
-library(tidytext)
-library(tidyverse)
-library(broom.mixed)
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(lmerTest))
+suppressPackageStartupMessages(library(tidytext))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(broom.mixed))
 source('../../../boba_util.R')
 
 df <- read.csv(file='../../../data/edge1.1_anonymized.csv', stringsAsFactors = FALSE)
@@ -120,6 +124,7 @@ df <- read.csv(file='../../../data/edge1.1_anonymized.csv', stringsAsFactors = F
 # ScaledTotalCitations: Total_Citations divided by 1000
 # ScaledWC: word count divided by 100
 # OrderedAcademicHierarchy: AcademicHierarchyStrict as an ordered factor
+# CustomWC: word count computed by regex. Here it's a dummy variable; it'll be computed later
 df <- df %>%
   mutate(
     NumCharacters = Number.Characters,
@@ -136,6 +141,7 @@ df <- df %>%
     WorkplaceMeanRank = ordered(WorkplaceMeanRank),
     ScaledTotalCitations = Total_Citations / 1000,
     ScaledWC = WC / 100,
+    CustomWC = WC,
     OrderedAcademicHierarchy = ordered(AcademicHierarchyStrict)
   )
 
@@ -163,6 +169,18 @@ df <- df %>%
 
 # hack
 tmp = '{{IV}} {{DV}}'
+
+# --- (B)
+# Create a custom word count variable used in A21
+# Made a block for it because it is slow
+countWords = function(x) {
+  length(unlist(strsplit(as.character(x), "\\W+")))
+}
+
+df = df %>%
+  rowwise() %>%
+  mutate(CustomWC = countWords(Text)) %>%
+  ungroup
 
 # --- (A)
 # All this mess is for creating the custom variable Status, used in A10
@@ -220,6 +238,7 @@ df <- df %>%
   group_by(Id) %>%
   mutate(
     WC = mean(WC, na.rm = T),
+    CustomWC = mean(CustomWC),
     PhdRanking = mean(PhdRanking)
   ) %>%
   slice(1) %>%
@@ -366,6 +385,17 @@ model
 result <- tidy(model, conf.int = TRUE) %>%
   mutate(
     z = statistic
+  )
+
+# --- (Model) anova
+model = aov({{DV}} ~ {{IV}}, data = df)
+summary(model)
+
+result = tidy(model, conf.int = TRUE) %>%
+  filter(term == '{{IV_alias}}') %>%
+  mutate(
+    z = qnorm(p.value),
+    z = abs(z)  # I don't know how to handle the sign of the z ...
   )
 
 # --- (O)
