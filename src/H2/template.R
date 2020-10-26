@@ -6,7 +6,8 @@
       "Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)",
       "Role == 2",
       "DebateSize > 1",
-      "Academic==1, TotalCommentsById < 100"
+      "Academic==1, TotalCommentsById < 100",
+      "!is.na(AcademicHierarchyStrict)"
     ]},
     {"var": "DV", "options": [
       "ThreadsThisYear",
@@ -355,6 +356,16 @@ result <- tidy(model, conf.int = TRUE) %>%
     z = qnorm(p),
     # make z the same sign as the estimate
     z = ifelse(sign(z)==sign(estimate), z, -z)
+  )
+
+# --- (Model) kendall
+model = cor.test(df${{IV}}, df${{DV}}, method = 'kendall')
+model
+
+# calculate z score
+result <- tidy(model, conf.int = TRUE) %>%
+  mutate(
+    z = statistic
   )
 
 # --- (O)
