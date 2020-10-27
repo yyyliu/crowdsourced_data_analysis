@@ -17,11 +17,13 @@
       "CustomWC",
       "NumCharacters",
       "WPS",
-      "SpokePCA"
+      "SpokePCA",
+      "ContributionsThisYear2013"
     ]},
     {"var": "IV", "options": [
       "AcademicHierarchyStrict",
       "OrderedAcademicHierarchy",
+      "AcademicHierarchyStrict2013",
       "Job_Title_S",
       "LogCitations",
       "PhdRanking",
@@ -52,6 +54,7 @@
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
       "OrderedAcademicHierarchy",
+      "AcademicHierarchyStrict2013",
       "Job_Title_SChaired Professor",
       "LogCitations",
       "PhdRanking",
@@ -81,6 +84,10 @@
       "condition": "Unit == comment or Unit == custom_A23"},
     {"variable": "DV", "option": "SpokePCA",
       "condition": "Unit == custom_A18"},
+    {"variable": "DV", "option": "ContributionsThisYear2013",
+      "condition": "Unit == author"},
+    {"variable": "IV", "option": "AcademicHierarchyStrict2013",
+      "condition": "Unit == author"},
     {"variable": "IV", "option": "PhdRanking",
       "condition": "Unit == author"},
     {"variable": "IV", "option": "CustomHierarchy",
@@ -95,6 +102,8 @@
       "condition": "IV == ScaledTotalCitations"},
     {"block": "A", "condition": "IV == Status", "skippable": true},
     {"block": "B", "condition": "DV == CustomWC", "skippable": true},
+    {"block": "C", "skippable": true, 
+      "condition": "DV == ContributionsThisYear2013 or IV == AcademicHierarchyStrict2013"},
     {"block": "Unit", "option": "custom_A23",
       "condition": "IV == AcademicHierarchyStrict and DV == NumCharacters"},
     {"block": "Unit", "option": "custom_A18",
@@ -108,6 +117,7 @@
 # --- (END)
 
 suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(reshape))
 suppressPackageStartupMessages(library(lmerTest))
 suppressPackageStartupMessages(library(tidytext))
 suppressPackageStartupMessages(library(tidyverse))
@@ -169,6 +179,30 @@ df <- df %>%
 
 # hack
 tmp = '{{IV}} {{DV}}'
+
+# --- (C)
+# two weird variables, used in A22
+# ContributionsThisYear2013: contributions in the year 2013, where missing value is assigned 0
+tmp=cast(df, Id_num ~ Year,value=c('ContributionsThisYear'))
+names(tmp)=paste0("ContributionsThisYear",names(tmp))
+tmp = tmp %>%
+  rename(Id_num = ContributionsThisYearId_num) %>%
+  select(Id_num, ContributionsThisYear2013)
+df <- left_join(df, tmp, by = "Id_num")
+
+# AHS2013: mean AcademicHierarchyStrict in the year 2013, with imputation
+tmp=cast(df, Id_num ~ Year, value=c('AcademicHierarchyStrict'), fun=mean)
+names(tmp)=paste0("AHS",names(tmp))
+tmp = tmp %>%
+  rename(Id_num = AHSId_num) %>%
+  rowwise() %>% 
+  mutate(
+    imputed = mean(c(AHS2012, AHS2014), na.rm=TRUE),
+    AHS2013 = ifelse(is.na(AHS2013), imputed, AHS2013)
+  ) %>%
+  select(Id_num, AHS2013) %>%
+  rename(AcademicHierarchyStrict2013 = AHS2013)
+df <- left_join(df, tmp, by = "Id_num")
 
 # --- (B)
 # Create a custom word count variable used in A21
@@ -385,6 +419,16 @@ model
 result <- tidy(model, conf.int = TRUE) %>%
   mutate(
     z = statistic
+  )
+
+# --- (Model) spearman
+model=cor.test(df${{DV}}, df${{IV}}, method = 'spearman')
+model
+
+result <- tidy(model, conf.int = TRUE) %>%
+  mutate(
+    z = qnorm(p.value),
+    z = ifelse(sign(z)==sign(estimate), z, -z)
   )
 
 # --- (Model) anova

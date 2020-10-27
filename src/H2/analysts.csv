@@ -12,5 +12,5 @@ A14,log,,NumCharacters,Workplace_US_Bin,comment,lmer,+ Workplace_SR_Bin + LogTot
 A17,none,!is.na(AcademicHierarchyStrict),WC,AcademicHierarchyStrict,comment,kendall,,,-4.3936,1.115e-05,-0.05278
 A18,none,,SpokePCA,StatusPCA,custom_A18,lmer,+ Lead + Year + Female + Loc + (Loc):(StatusPCA + Lead + Year + Female),+ (1 | ThreadId) + (1 | Id),0.335361,0.3687,0.08902
 A21,none,,CustomWC,OrderedAcademicHierarchy,author,anova,,,0.69953,0.2421,1.352
-A22,none,,0.582,-0.03740264
+A22,none,,ContributionsThisYear2013,AcademicHierarchyStrict2013,author,spearman,,,-0.20689,0.58195,-0.03740264
 A23,none,Role == 2,NumCharacters,AcademicHierarchyStrict,custom_A23,lm,+ Female,,-1.09963,.13574,-239.01
