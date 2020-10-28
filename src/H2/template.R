@@ -124,6 +124,10 @@
       "condition": "IV == AcademicHierarchyStrict and DV == NumCharacters"},
     {"block": "Unit", "option": "custom_A18",
       "condition": "DV == SpokePCA and IV == StatusPCA"},
+    {"block": "Model", "option": "spearman", 
+      "condition": "IV != Job_Title_S and IV < 3"},
+    {"block": "Model", "option": "kendall", 
+      "condition": "IV != Job_Title_S and IV != PhdRanking and IV != Workplace_US_Bin and IV < 3"},
     {"block": "Transform", "option": "log",
       "condition": "DV == WC or DV == NumCharacters"}
   ],
