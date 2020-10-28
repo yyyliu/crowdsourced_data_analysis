@@ -116,6 +116,8 @@
       "condition": "IV == ScaledTotalCitations"},
     {"variable": "random_term", "index": 1,
       "condition": "Unit != author"},
+    {"variable": "random_term", "index": 2,
+      "condition": "filter.index != 2"},
     {"block": "A", "condition": "IV == Status", "skippable": true},
     {"block": "B", "condition": "DV == CustomWC", "skippable": true},
     {"block": "C", "skippable": true, 
