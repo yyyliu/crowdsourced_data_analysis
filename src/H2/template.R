@@ -53,7 +53,7 @@
     ]},
     {"var": "IV_alias", "options": [
       "AcademicHierarchyStrict",
-      "OrderedAcademicHierarchy",
+      "OrderedAcademicHierarchy.L",
       "AcademicHierarchyStrict2013",
       "CustomHierarchy6",
       "LogCitations",
@@ -113,7 +113,7 @@
     {"variable": "covariates", "index": 9,
       "condition": "Unit == custom_A18 and DV == SpokePCA"},
     {"variable": "random_term", "index": 0,
-      "condition": "IV == ScaledTotalCitations"},
+      "condition": "IV == ScaledTotalCitations and Unit != author"},
     {"variable": "random_term", "index": 1,
       "condition": "Unit != author"},
     {"variable": "random_term", "index": 2,
@@ -127,9 +127,9 @@
     {"block": "Unit", "option": "custom_A18",
       "condition": "DV == SpokePCA and IV == StatusPCA"},
     {"block": "Model", "option": "spearman", 
-      "condition": "IV != Job_Title_S and IV < 3"},
+      "condition": "IV != Job_Title_S and IV != OrderedAcademicHierarchy and IV != CustomHierarchy"},
     {"block": "Model", "option": "kendall", 
-      "condition": "IV != Job_Title_S and IV != PhdRanking and IV != Workplace_US_Bin and IV < 3"},
+      "condition": "IV != Job_Title_S and IV != PhdRanking and IV != Workplace_US_Bin and IV != OrderedAcademicHierarchy and IV != CustomHierarchy"},
     {"block": "Transform", "option": "log",
       "condition": "DV == WC or DV == NumCharacters"}
   ],
@@ -469,7 +469,7 @@ model = aov({{DV}} ~ {{IV}}, data = df)
 summary(model)
 
 result = tidy(model, conf.int = TRUE) %>%
-  filter(term == '{{IV_alias}}') %>%
+  filter(term == '{{IV}}') %>%
   mutate(
     z = qnorm(p.value),
     z = abs(z)  # I don't know how to handle the sign of the z ...
