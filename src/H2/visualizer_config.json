@@ -1,0 +1,18 @@
+{
+  "files": [
+    {"id": "est", "path": "estimate.csv"}
+  ],
+  "schema": {
+    "point_estimate": {"file": "est", "field": "z"},
+    "p_value": {"file": "est", "field": "p.value"},
+    "annotation": {"file": "est", "field": "analyst"}
+  },
+  "labels": {
+    "dataset": "H2",
+    "x_axis": "z score",
+    "x_axis_fit": "TODO",
+    "fit_range": [0, 1],
+    "x_range": [-10, 20],
+    "x_range_outer": [-20, 30]
+  }
+}
