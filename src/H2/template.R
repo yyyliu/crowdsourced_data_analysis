@@ -367,7 +367,8 @@ df<-rbind(Academics_IRL, Academics_Online)
 df <- df %>% 
   group_by(Id, AcademicHierarchyStrict, Female) %>% 
   # Academic Status might change, so taking the mean. This is not ideal though.
-  summarise(NumCharacters = mean(NumCharacters)) %>%
+  mutate(NumCharacters = mean(NumCharacters)) %>%
+  slice(1) %>%
   ungroup %>%
   mutate(AcademicHierarchyStrict = as.numeric(as.character(AcademicHierarchyStrict)))
 
