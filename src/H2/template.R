@@ -348,6 +348,16 @@ wrangle <- function (df) {
       StatusPCA = prcomp(x=cbind(tmp$PhD_Year, tmp$AcademicHierarchyStrict), retx=T, center=T, scale.=T)$x[,1]
     )
 
+  # add back other fields from df
+  ori <- df %>%
+    group_by(Id, ThreadId) %>%
+    slice(1) %>%
+    select(-Year,-UniqueContributors,-PreviousCitations,-Limited_Information,-AcademicHierarchyStrict,
+          -DebateSize,-Female,-Academic,-HavePhD,-PhD_Year,-PhD_Institution_SR_Bin,-Workplace_SR_Bin,
+          -PhD_Institution_US_IR_Bin,-Workplace_US_IR_Bin,-Total_Citations,-H_Index,-i10_Index)
+
+  tmp = left_join(tmp, ori, by = c("Id" = "Id", "ThreadId" = "ThreadId"))
+
   return(tmp)
 }
 

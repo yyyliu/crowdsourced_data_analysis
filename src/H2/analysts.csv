@@ -14,4 +14,3 @@ A18,none,,SpokePCA,StatusPCA,custom_A18,lmer,+ Lead + Year + Female + Loc + (Loc
 A21,none,,CustomWC,OrderedAcademicHierarchy,author,anova,,,0.69953,0.2421,1.352
 A22,none,,ContributionsThisYear2013,AcademicHierarchyStrict2013,author,spearman,,,-0.20689,0.58195,-0.03740264
 A23,none,Role == 2,NumCharacters,AcademicHierarchyStrict,custom_A23,lm,+ Female,,-1.09963,.13574,-239.01
-test,log,,NumCharacters,AcademicHierarchyStrict,custom_A23,lm,+ Female + Academic,,0,0,0
