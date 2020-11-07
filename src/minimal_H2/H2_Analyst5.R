@@ -13,5 +13,5 @@ edge <- read.csv("../data/edge1.1_anonymized.csv")
 edge <- edge[complete.cases(edge), ]
   
 # let's get summary statistics of Threads This Year vs Job Title
-edge.2hyp.fit <- lm(ThreadsThisYear ~ Job_Title_S, data = edge.2hyp)
+edge.2hyp.fit <- lm(ThreadsThisYear ~ Job_Title_S, data = edge)
 summary(edge.2hyp.fit)

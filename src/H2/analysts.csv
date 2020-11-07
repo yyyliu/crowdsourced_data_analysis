@@ -1,7 +1,7 @@
 analyst,Transform,filter,DV,IV,Unit,Model,covariates,random_term,z,p.value,estimate
 A1,log,,NumCharacters,AcademicHierarchyStrict,comment,lm,+ Female + Academic,,-3.75987,8.50e-05,-0.16150
 A3,none,DebateSize > 1,ScaledWC,ScaledTotalCitations,comment,lmer,+ 1 + WorkplaceMeanRank + OrderedAcademicHierarchy,+ (1 | Id_num) + (1 + ScaledTotalCitations | ThreadId),2.0663,0.0194,0.04349
-A5,none,,ThreadsThisYear,Job_Title_S,comment,lm,,,7.35664,9.43e-14,3.8810
+A5,none,complete.cases(df),ThreadsThisYear,Job_Title_S,comment,lm,,,7.35664,9.43e-14,3.8810
 A6,none,"Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)",MeanWC,AcademicHierarchyStrict,author,lm,,,-0.071532,0.52851,-64.38
 A7,log,,NumCharacters,LogCitations,comment,lm,+ AcademicHierarchyStrict + Discipline,,-3.88674,5.08e-05,-0.22119
 A9,none,,WC,PhdRanking,author,lm,,,5.62473,9.29e-09,69.70

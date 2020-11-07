@@ -7,7 +7,8 @@
       "Role == 2",
       "DebateSize > 1",
       "Academic==1, TotalCommentsById < 100",
-      "!is.na(AcademicHierarchyStrict)"
+      "!is.na(AcademicHierarchyStrict)",
+      "complete.cases(df)"
     ]},
     {"var": "DV", "options": [
       "ThreadsThisYear",
@@ -196,8 +197,6 @@ df <- left_join(df, tmp, by = "Id")
 # filtering
 df <- df %>%
   filter({{filter}})
-
-# todo: exclude all NAs as in A5?
 
 # hack
 tmp = '{{IV}} {{DV}}'
