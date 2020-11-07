@@ -8,6 +8,8 @@
       "UniqueFemaleContributors >= 1 & UniqueContributors > 1", 
       "Female_Contributions==UniqueFemaleContributors",
       "UniqueFemaleParticipation > 0 & UniqueFemaleParticipation < 1",
+      "FemaleParticipation < 0.20, Female_Contributions <= 22.5",
+      "!(ThreadId == 98 & Id == 90)",
       ""
     ]},
     {"var": "DV", "options": [
@@ -92,7 +94,8 @@
     {"block": "Unit", "option": "custom",
       "condition": "DV == NumPosts and IV == NumFemale"},
     {"block": "Model", "option": "logistic",
-      "condition": "DV == NextFemale or DV == Female"}
+      "condition": "DV == NextFemale or DV == Female"},
+    {"block": "A", "skippable": true, "condition": "filter.index == 6"}
   ],
   "before_execute": "rm -rf results && mkdir results",
   "after_execute": "cp ../after_execute.sh ./ && sh after_execute.sh",
@@ -100,13 +103,23 @@
 }
 # --- (END)
 
-library(readr)
-library(tidyverse)
-library(broom.mixed)
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(broom.mixed))
 source('../../../boba_util.R')
 
 df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 
+# hack for the constraint to work
+formula = '{{IV}} {{DV}} {{filter}}'
+
+# --- (A)
+# removing any rows with NAs, must be done before adding new variables
+# we will tie this filtering to another option in "filter", because A5 did both
+df <- df %>%
+  filter(complete.cases(df))
+
+# --- (B)
 # augment the dataset with additional variables
 # FemaleCumulativeProportion: cumulative proportion of females in each conversation
 # MeanFemaleComments: proxy for average # of comments made by each woman in a conversation
@@ -165,12 +178,6 @@ df <- df %>%
 
 # DebateSizeZ: appeared in A12, must be done after filtering
 df$DebateSizeZ <- with(df, (DebateSize - mean(DebateSize)) / sd(DebateSize))
-
-# todo: remove the outlier in A6?
-# todo: remove the outlier in A5?
-
-# hack for the constraint to work
-formula = '{{IV}} {{DV}}'
 
 # some IV/DV requires us to include only female comments
 df <- df %>%
@@ -256,9 +263,16 @@ model
 # compute z score
 result <- tidy(model, conf.int = TRUE) %>%
   mutate(
+    # they seem to calculate p value from t distribution when the model summary
+    # do not report the exact p-value, usually because it's very small
+    p = pt(statistic, parameter, lower.tail=FALSE),
+    p = ifelse(p.value > 1e-14, p.value, p),
+    # A4 uses this method to compute z score, probably because p value is 0
     fr = 0.5 * log((1 + estimate)/(1 - estimate)),
     se = sqrt(1/(parameter - 3)),
-    z = fr/se
+    z = ifelse(p.value == 0, fr/se, qnorm(p)),
+    # make z the same sign as the estimate
+    z = ifelse(sign(z)==sign(estimate), z, -z)
   ) %>%
   select(-fr, -se)
 

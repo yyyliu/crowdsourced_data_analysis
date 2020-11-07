@@ -3,8 +3,8 @@ A1,Female_Contributions==UniqueFemaleContributors,NextFemale,FemaleCurrentCount,
 A2,Type == 2,NumPosts,NumFemale,custom,lm,,,-1.71812,0.042887
 A3,DebateSize > 1,ContributionsbyAuthor,UniqueFemaleParticipation,comment,poisson,+ AuthorPreviousComments,+ (1 + UniqueFemaleParticipation | Id_num) + (1 | ThreadId),3.45272,5.54953e-4
 A4,,Female_Contributions,UniqueFemaleContributors,comment,pearson,,,118.2963,0
-A5,,Female_Contributions,FemaleParticipation,comment,pearson,,,10.00567,7.20e-24
-A6,,CommentsChange,UniqueFemaleContributors,author,lm,,,-2.28693,0.0111
+A5,"FemaleParticipation < 0.20, Female_Contributions <= 22.5",Female_Contributions,FemaleParticipation,comment,pearson,,,10.00568,1.4389e-23
+A6,!(ThreadId == 98 & Id == 90),CommentsChange,UniqueFemaleContributors,author,lm,,,-2.28627,0.011119
 A7,Type == 2 & DebateSize > 1,Female,FemalePreviousCount,comment,logistic,+ Discipline,,15.58500,9.13787e-55
 A9,,WC,FemaleCumulativeProportion,comment,lm,,,11.82444,2.90816e-32
 A11,,ContributionsbyAuthor,UniqueFemaleContributors,author,poisson,,+ (1|ThreadId),-1.807,0.070757
