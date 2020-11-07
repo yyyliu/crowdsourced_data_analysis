@@ -248,7 +248,7 @@ phd <- df$HavePhD
 phd[is.na(phd)] <- 0 # Assumes no info equals no PhD
 phd <- tapply(phd, ind, mean)
 
-academic <- as.numeric(df$Academic)
+academic <- as.numeric(factor(df$Academic))
 academic[is.na(academic)] <- 0 # Assumes no info equals not academic
 academic <- tapply(academic, ind, mean)
 

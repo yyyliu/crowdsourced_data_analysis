@@ -3,7 +3,7 @@
 
 library(tidyverse)
 library(lme4)
-edge <- read.csv("../data/edge1.1_anonymized.csv")
+edge <- read.csv('../data/edge1.1_anonymized.csv', stringsAsFactors = FALSE)
 
 # Status is tricky to operationalize. Let's define it by a linear combination of various
 # variable obtained by factor analysis
@@ -18,7 +18,7 @@ phd <- edge$HavePhD
 phd[is.na(phd)] <- 0 # Assumes no info equals no PhD
 phd <- tapply(phd, ind, mean)
 
-academic <- as.numeric(edge$Academic)
+academic <- as.numeric(factor(edge$Academic))
 academic[is.na(academic)] <- 0 # Assumes no info equals not academic
 academic <- tapply(academic, ind, mean)
 
