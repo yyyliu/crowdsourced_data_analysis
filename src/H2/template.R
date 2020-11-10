@@ -96,7 +96,7 @@
     {"variable": "IV", "option": "StatusPCA",
       "condition": "Unit == custom_A18"},
     {"variable": "covariates", "index": 1,
-      "condition": "filter.index != 4 and IV != StatusPCA and IV != Status"},
+      "condition": "filter.index != 4 and filter.index != 6 and IV != StatusPCA and IV != Status"},
     {"variable": "covariates", "index": 2,
       "condition": "IV.index > 3 and IV != StatusPCA and IV != Status"},
     {"variable": "covariates", "index": 3,
