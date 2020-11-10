@@ -56,13 +56,15 @@
     {"variable": "DV", "option": "Female_Contributions", 
       "condition": "Unit != author and IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
     {"variable": "DV", "option": "ContributionsbyAuthor", 
-      "condition": "filter.index != 4 and IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleParticipation and IV != FemaleCumulativeProportion"},
+      "condition": "filter.index != 4 and filter.index != 6 and IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleParticipation and IV != FemaleCumulativeProportion"},
+    {"variable": "DV", "option": "WC",
+      "condition": "filter.index != 6"},
     {"variable": "DV", "option": "NextFemale",
       "condition": "Unit == comment and Model == logistic and (IV == FemaleCurrentCount or IV == FemalePreviousCount or IV == FemaleCumulativeProportion)"},
     {"variable": "DV", "option": "NumPosts",
       "condition": "Unit == custom"},
     {"variable": "DV", "option": "CommentsChange",
-      "condition": "Unit != comment and Model != poisson and IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
+      "condition": "filter.index != 6 and Unit != comment and Model != poisson and IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
     {"variable": "DV", "option": "Female",
       "condition": "Unit == comment and Model == logistic and IV == FemalePreviousCount"},
     {"variable": "DV", "option": "FemaleParticipation",
@@ -111,7 +113,7 @@ source('../../../boba_util.R')
 df <- read.csv(file='../../../data/edge1.1_anonymized.csv')
 
 # hack for the constraint to work
-formula = '{{IV}} {{DV}} {{filter}}'
+formula = '{{filter}} {{IV}} {{DV}}'
 
 # --- (A)
 # removing any rows with NAs, must be done before adding new variables
