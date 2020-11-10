@@ -96,7 +96,7 @@
     {"variable": "random_term", "index": 1,
       "condition": "Unit != thread and IV == UniqueFemaleParticipation"},
     {"block": "Unit", "option": "custom",
-      "condition": "DV == NumPosts and IV == NumFemale"},
+      "condition": "DV == NumPosts and IV == NumFemale and filter.index != 6"},
     {"block": "Model", "option": "logistic",
       "condition": "DV == NextFemale or DV == Female"},
     {"block": "A", "skippable": true, "condition": "filter.index == 6"}
