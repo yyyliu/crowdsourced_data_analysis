@@ -54,7 +54,7 @@
     {"link": ["DV", "female_only"]},
     {"link": ["random_term", "glm_call"]},
     {"variable": "DV", "option": "Female_Contributions", 
-      "condition": "Unit != author and IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
+      "condition": "filter.index != 4 and Unit != author and IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleCumulativeProportion"},
     {"variable": "DV", "option": "ContributionsbyAuthor", 
       "condition": "filter.index != 4 and filter.index != 6 and IV != FemaleCurrentCount and IV != FemalePreviousCount and IV != FemaleParticipation and IV != FemaleCumulativeProportion"},
     {"variable": "DV", "option": "WC",
@@ -242,7 +242,7 @@ result <- tidy(model, conf.int = TRUE) %>%
   mutate(
     # they seem to calculate p value from t distribution when the model summary
     # do not report the exact p-value, usually because it's very small
-    p = pt(statistic, df.residual(model), lower.tail=FALSE),
+    p = pt(abs(statistic), df.residual(model), lower.tail=FALSE),
     p = ifelse(p.value > 1e-14, p.value, p),
     z = qnorm(p),
     # make z the same sign as the estimate
@@ -269,7 +269,7 @@ result <- tidy(model, conf.int = TRUE) %>%
   mutate(
     # they seem to calculate p value from t distribution when the model summary
     # do not report the exact p-value, usually because it's very small
-    p = pt(statistic, parameter, lower.tail=FALSE),
+    p = pt(abs(statistic), parameter, lower.tail=FALSE),
     p = ifelse(p.value > 1e-14, p.value, p),
     # A4 uses this method to compute z score, probably because p value is 0
     fr = 0.5 * log((1 + estimate)/(1 - estimate)),

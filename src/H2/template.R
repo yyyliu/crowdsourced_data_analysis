@@ -135,7 +135,8 @@
       "condition": "DV == WC or DV == NumCharacters"}
   ],
   "before_execute": "rm -rf results && mkdir results",
-  "after_execute": "cp ../after_execute.sh ./ && sh after_execute.sh"
+  "after_execute": "cp ../after_execute.sh ./ && sh after_execute.sh",
+  "visualizer": "visualizer_config.json"
 }
 # --- (END)
 
@@ -419,7 +420,7 @@ result <- tidy(model, conf.int = TRUE) %>%
   mutate(
     # they seem to calculate p value from t distribution when the model summary
     # do not report the exact p-value, usually because it's very small
-    p = pt(statistic, df.residual(model), lower.tail=FALSE),
+    p = pt(abs(statistic), df.residual(model), lower.tail=FALSE),
     p = ifelse(p.value > 1e-14, p.value, p),
     z = qnorm(p),
     # make z the same sign as the estimate
@@ -436,7 +437,7 @@ result <- tidy(model, conf.int = TRUE) %>%
   mutate(
     # they seem to calculate p value from t distribution when the model summary
     # do not report the exact p-value, usually because it's very small
-    p = pt(statistic, df.residual(model), lower.tail=FALSE),
+    p = pt(abs(statistic), df.residual(model), lower.tail=FALSE),
     p = ifelse(p.value > 1e-14, p.value, p),
     z = qnorm(p),
     # make z the same sign as the estimate
