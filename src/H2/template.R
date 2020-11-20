@@ -418,11 +418,8 @@ summary(model)
 result <- tidy(model, conf.int = TRUE) %>%
   filter(term == '{{IV_alias}}') %>%
   mutate(
-    # they seem to calculate p value from t distribution when the model summary
-    # do not report the exact p-value, usually because it's very small
-    p = pt(abs(statistic), df.residual(model), lower.tail=FALSE),
-    p = ifelse(p.value > 1e-14, p.value, p),
-    z = qnorm(p),
+    log_p = pt(abs(statistic), df.residual(model), lower.tail=FALSE, log.p=TRUE),
+    z = qnorm(log_p, lower.tail=FALSE, log.p = TRUE),
     # make z the same sign as the estimate
     z = ifelse(sign(z)==sign(estimate), z, -z)
   )
@@ -435,11 +432,8 @@ summary(model)
 result <- tidy(model, conf.int = TRUE) %>%
   filter(term == '{{IV_alias}}') %>%
   mutate(
-    # they seem to calculate p value from t distribution when the model summary
-    # do not report the exact p-value, usually because it's very small
-    p = pt(abs(statistic), df.residual(model), lower.tail=FALSE),
-    p = ifelse(p.value > 1e-14, p.value, p),
-    z = qnorm(p),
+    log_p = pt(abs(statistic), df.residual(model), lower.tail=FALSE, log.p=TRUE),
+    z = qnorm(log_p, lower.tail=FALSE, log.p = TRUE),
     # make z the same sign as the estimate
     z = ifelse(sign(z)==sign(estimate), z, -z)
   )
