@@ -240,11 +240,8 @@ summary(model)
 result <- tidy(model, conf.int = TRUE) %>%
   filter(term == '{{IV}}') %>%
   mutate(
-    # they seem to calculate p value from t distribution when the model summary
-    # do not report the exact p-value, usually because it's very small
-    p = pt(abs(statistic), df.residual(model), lower.tail=FALSE),
-    p = ifelse(p.value > 1e-14, p.value, p),
-    z = qnorm(p),
+    log_p = pt(abs(statistic), df.residual(model), lower.tail=FALSE, log.p=TRUE),
+    z = qnorm(log_p, lower.tail=FALSE, log.p = TRUE),
     # make z the same sign as the estimate
     z = ifelse(sign(z)==sign(estimate), z, -z)
   )
@@ -267,18 +264,11 @@ model
 # compute z score
 result <- tidy(model, conf.int = TRUE) %>%
   mutate(
-    # they seem to calculate p value from t distribution when the model summary
-    # do not report the exact p-value, usually because it's very small
-    p = pt(abs(statistic), parameter, lower.tail=FALSE),
-    p = ifelse(p.value > 1e-14, p.value, p),
-    # A4 uses this method to compute z score, probably because p value is 0
-    fr = 0.5 * log((1 + estimate)/(1 - estimate)),
-    se = sqrt(1/(parameter - 3)),
-    z = ifelse(p.value == 0, fr/se, qnorm(p)),
+    log_p = pt(abs(statistic), parameter, lower.tail=FALSE, log.p=TRUE),
+    z = qnorm(log_p, lower.tail=FALSE, log.p = TRUE),
     # make z the same sign as the estimate
     z = ifelse(sign(z)==sign(estimate), z, -z)
-  ) %>%
-  select(-fr, -se)
+  )
 
 # --- (Model) kendall
 model = cor.test(df${{IV}}, df${{DV}}, method = 'kendall')
