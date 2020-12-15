@@ -1,15 +1,15 @@
 analyst,filter,DV,IV,Unit,Model,covariates,random_term,z,p.value
-A1,Female_Contributions==UniqueFemaleContributors,NextFemale,FemaleCurrentCount,comment,logistic,,,9.87975,5.09593e-23
-A2,Type == 2,NumPosts,NumFemale,custom,lm,,,-1.71812,0.042887
-A3,DebateSize > 1,ContributionsbyAuthor,UniqueFemaleParticipation,comment,poisson,+ AuthorPreviousComments,+ (1 + UniqueFemaleParticipation | Id_num) + (1 | ThreadId),3.45272,5.54953e-4
-A4,,Female_Contributions,UniqueFemaleContributors,comment,pearson,,,118.2963,0
+A1,Female_Contributions==UniqueFemaleContributors,NextFemale,FemaleCurrentCount,comment,logistic,,,10.48809,9.7988e-26
+A2,Type == 2,NumPosts,NumFemale,custom,lm,,,-2.024806,0.042887
+A3,DebateSize > 1,ContributionsbyAuthor,UniqueFemaleParticipation,comment,poisson,+ AuthorPreviousComments,+ (1 + UniqueFemaleParticipation | Id_num) + (1 | ThreadId),3.462,5.366759e-4
+A4,,Female_Contributions,UniqueFemaleContributors,comment,pearson,,,106.2675,0
 A5,"FemaleParticipation < 0.20, Female_Contributions <= 22.5",Female_Contributions,FemaleParticipation,comment,pearson,,,10.00568,1.4389e-23
-A6,!(ThreadId == 98 & Id == 90),CommentsChange,UniqueFemaleContributors,author,lm,,,-2.28627,0.011119
+A6,!(ThreadId == 98 & Id == 90),CommentsChange,UniqueFemaleContributors,author,lm,,,-2.564246,0.01034
 A7,Type == 2 & DebateSize > 1,Female,FemalePreviousCount,comment,logistic,+ Discipline,,15.58500,9.13787e-55
 A9,,WC,FemaleCumulativeProportion,comment,lm,,,11.82444,2.90816e-32
-A11,,ContributionsbyAuthor,UniqueFemaleContributors,author,poisson,,+ (1|ThreadId),-1.807,0.070757
-A12,UniqueFemaleContributors >= 1 & UniqueContributors > 1,Female_Contributions,UniqueFemaleParticipation,thread,poisson,+ LiveEver + DebateSizeZ,,9.105,8.58919e-20
-A13,Type == 2,FemaleParticipation,UniqueFemaleContributors,thread,lm,+ UniqueContributors,,13.70766,9.125719e-43
-A14,UniqueFemaleContributors >= 1 & UniqueContributors > 1,FemaleParticipation,UniqueFemaleContributors,thread,lm,,,1.60725,0.946
-A17,UniqueFemaleParticipation > 0 & UniqueFemaleParticipation < 1,MeanFemaleComments,UniqueFemaleParticipation,thread,kendall,,,-0.31419,0.7534
-A19,,ContributionsbyAuthor,UniqueFemaleContributors,comment,lm,+ PreviousContributions + HavePhD + Total_Citations,,-7.13873,4.711277e-13
+A11,,ContributionsbyAuthor,UniqueFemaleContributors,author,poisson,,+ (1|ThreadId),-1.893284,0.05832007
+A12,UniqueFemaleContributors >= 1 & UniqueContributors > 1,Female_Contributions,UniqueFemaleParticipation,thread,poisson,+ LiveEver + DebateSizeZ,,9.511201,1.88474e-21
+A13,Type == 2,FemaleParticipation,UniqueFemaleContributors,thread,lm,+ UniqueContributors,,14.95307,1.487389e-50
+A14,UniqueFemaleContributors >= 1 & UniqueContributors > 1,FemaleParticipation,UniqueFemaleContributors,thread,lm,,,-0.33745,0.73578
+A17,UniqueFemaleParticipation > 0 & UniqueFemaleParticipation < 1,MeanFemaleComments,UniqueFemaleParticipation,thread,kendall,,,4.543073,5.54401e-6
+A19,,ContributionsbyAuthor,UniqueFemaleContributors,comment,lm,+ PreviousContributions + HavePhD + Total_Citations,,-7.23337,4.711277e-13

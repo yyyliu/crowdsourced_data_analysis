@@ -1,16 +1,16 @@
-analyst,Transform,filter,DV,IV,Unit,Model,covariates,random_term,z,p.value,estimate
-A1,log,,NumCharacters,AcademicHierarchyStrict,comment,lm,+ Female + Academic,,-3.75987,8.50e-05,-0.16150
-A3,none,DebateSize > 1,ScaledWC,ScaledTotalCitations,comment,lmer,+ 1 + WorkplaceMeanRank + OrderedAcademicHierarchy,+ (1 | Id_num) + (1 + ScaledTotalCitations | ThreadId),2.0663,0.0194,0.04349
-A5,none,complete.cases(df),ThreadsThisYear,Job_Title_S,comment,lm,,,7.35664,9.43e-14,3.8810
-A6,none,"Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)",MeanWC,AcademicHierarchyStrict,author,lm,,,-0.071532,0.52851,-64.38
-A7,log,,NumCharacters,LogCitations,comment,lm,+ AcademicHierarchyStrict + Discipline,,-3.88674,5.08e-05,-0.22119
-A9,none,,WC,PhdRanking,author,lm,,,5.62473,9.29e-09,69.70
-A10,log,,WC,Status,comment,lmer,+ Role + Female + Type,+ (1 | ThreadId) + (1 | Id),4.19573,1.3597e-05,0.12150
-A11,none,"Academic==1, TotalCommentsById < 100",WPS,H_Index,comment,lmer,+ Female + Years_from_PhD + LogTotalCitations + AcademicHierarchyStrict,+ (1 | Live),0.85615,0.19596,0.02247
-A12,none,,MeanWC,CustomHierarchy,custom_A12,lm,+ CustomDiscipline + Male,,0.56106,0.28738,54.39
-A14,log,,NumCharacters,Workplace_US_Bin,comment,lmer,+ Workplace_SR_Bin + LogTotalCitations,+ (1 | ThreadId) + (1 | Id),-0.57987,0.719, 0.03351
-A17,none,!is.na(AcademicHierarchyStrict),WC,AcademicHierarchyStrict,comment,kendall,,,-4.3936,1.115e-05,-0.05278
-A18,none,,SpokePCA,StatusPCA,custom_A18,lmer,+ Lead + Year + Female + Loc + (Loc):(StatusPCA + Lead + Year + Female),+ (1 | ThreadId) + (1 | Id),0.335361,0.3687,0.08902
-A21,none,,CustomWC,OrderedAcademicHierarchy,author,anova,,,0.69953,0.2421,1.352
-A22,none,,ContributionsThisYear2013,AcademicHierarchyStrict2013,author,spearman,,,-0.20689,0.58195,-0.03740264
-A23,none,Role == 2,NumCharacters,AcademicHierarchyStrict,custom_A23,lm,+ Female,,-1.09963,.13574,-239.01
+analyst,Transform,filter,DV,IV,Unit,Model,covariates,random_term,z,p.value
+A1,log,,NumCharacters,AcademicHierarchyStrict,comment,lm,+ Female + Academic,,-3.92983,8.50e-05
+A3,none,DebateSize > 1,ScaledWC,ScaledTotalCitations,comment,lmer,+ 1 + WorkplaceMeanRank + OrderedAcademicHierarchy,+ (1 | Id_num) + (1 + ScaledTotalCitations | ThreadId),2.43845,0.0194
+A5,none,complete.cases(df),ThreadsThisYear,Job_Title_S,comment,lm,,,7.44865,9.43e-14
+A6,none,"Limited_Information == 0, HavePhD == 1, !(ThreadId == 342 & Id == 283)",MeanWC,AcademicHierarchyStrict,author,lm,,,-0.63027,0.52851
+A7,log,,NumCharacters,LogCitations,comment,lm,+ AcademicHierarchyStrict + Discipline,,-4.05192,5.08e-05
+A9,none,,WC,PhdRanking,author,lm,,,5.743207,9.29e-09
+A10,log,,WC,Status,comment,lmer,+ Role + Female + Type,+ (1 | ThreadId) + (1 | Id),4.380243,1.3597e-05
+A11,none,"Academic==1, TotalCommentsById < 100",WPS,H_Index,comment,lmer,+ Female + Years_from_PhD + LogTotalCitations + AcademicHierarchyStrict,+ (1 | Live),1.293156,0.19596
+A12,none,,MeanWC,CustomHierarchy,custom_A12,lm,+ CustomDiscipline + Male,,1.063894,0.28738
+A14,log,,NumCharacters,Workplace_US_Bin,comment,lmer,+ Workplace_SR_Bin + LogTotalCitations,+ (1 | ThreadId) + (1 | Id),0.6023671,0.5488377
+A17,none,!is.na(AcademicHierarchyStrict),WC,AcademicHierarchyStrict,comment,kendall,,,-4.3936,1.115e-05
+A18,none,,SpokePCA,StatusPCA,custom_A18,lmer,+ Lead + Year + Female + Loc + (Loc):(StatusPCA + Lead + Year + Female),+ (1 | ThreadId) + (1 | Id),1.309706,0.191853
+A21,none,,CustomWC,OrderedAcademicHierarchy,author,anova,,,0.6995324,0.2421097
+A22,none,,ContributionsThisYear2013,AcademicHierarchyStrict2013,author,spearman,,,-0.206893,0.58195
+A23,none,Role == 2,NumCharacters,AcademicHierarchyStrict,custom_A23,lm,+ Female,,-1.49182,0.13574
